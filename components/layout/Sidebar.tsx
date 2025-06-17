@@ -274,6 +274,11 @@ const Sidebar = memo(
     const [isNewGroupOpen, setIsNewGroupOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [hasMounted, setHasMounted] = useState(false);
+
+    useEffect(() => {
+      setHasMounted(true);
+    }, []);
 
     useEffect(() => {
       const checkMobile = () => {
@@ -344,7 +349,7 @@ const Sidebar = memo(
 
     return (
       <>
-        {isMobile && (
+        {hasMounted && isMobile && (
           <>
             <ToggleButton onClick={handleToggle}>
               {isOpen ? <CloseIcon /> : <MenuIcon />}

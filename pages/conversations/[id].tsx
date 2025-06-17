@@ -87,7 +87,7 @@ export const getServerSideProps: GetServerSideProps<
     isGroup: conversationData?.isGroup,
     groupName: conversationData?.groupName,
     groupDescription: conversationData?.groupDescription,
-    groupImage: conversationData?.groupImage,
+    groupImage: conversationData?.groupImage ?? null,
     adminUsers: conversationData?.adminUsers,
     createdAt: conversationData?.createdAt
       ? convertFirestoreTimestampToString(conversationData.createdAt)
