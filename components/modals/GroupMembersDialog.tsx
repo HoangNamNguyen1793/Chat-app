@@ -1,34 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, memo } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  Avatar,
-  IconButton,
-  Menu,
-  MenuItem,
-  TextField,
-  Box,
-  Typography,
-  Chip,
-  Snackbar,
-  Alert,
-  Divider,
-} from "@mui/material";
-import {
-  MoreVert as MoreVertIcon,
-  PersonAdd as PersonAddIcon,
-  AdminPanelSettings as AdminIcon,
-  Person as PersonIcon,
-} from "@mui/icons-material";
+
 import { useAuthState } from "react-firebase-hooks/auth";
 import * as EmailValidator from "email-validator";
 import { auth } from "../../config/firebase";
@@ -42,6 +15,16 @@ import {
   isUserAdmin,
 } from "../../utils/groupUtils";
 import { Conversation, GroupMember } from "../../types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCheckCircle,
+  faEllipsisV,
+  faExclamationCircle,
+  faTimes,
+  faUser,
+  faUserPlus,
+  faUserShield,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface GroupMembersDialogProps {
   open: boolean;
@@ -67,7 +50,7 @@ const GroupMembersDialog = memo(
     const [showAddMember, setShowAddMember] = useState(false);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedMember, setSelectedMember] = useState<GroupMember | null>(
-      null
+      null,
     );
 
     const currentUserEmail = loggedInUser?.email || "";
@@ -107,7 +90,7 @@ const GroupMembersDialog = memo(
 
     const handleMenuOpen = (
       event: React.MouseEvent<HTMLElement>,
-      member: GroupMember
+      member: GroupMember,
     ) => {
       setAnchorEl(event.currentTarget);
       setSelectedMember(member);
@@ -164,7 +147,7 @@ const GroupMembersDialog = memo(
         await removeMemberFromGroup(
           conversationId,
           memberEmail,
-          currentUserEmail
+          currentUserEmail,
         );
         showSnackbar("Member removed successfully!");
         await loadMembers();
@@ -179,14 +162,14 @@ const GroupMembersDialog = memo(
 
     const toggleAdminStatus = async (
       memberEmail: string,
-      isCurrentlyAdmin: boolean
+      isCurrentlyAdmin: boolean,
     ) => {
       try {
         if (isCurrentlyAdmin) {
           await removeAdminPrivileges(
             conversationId,
             memberEmail,
-            currentUserEmail
+            currentUserEmail,
           );
           showSnackbar("Admin privileges removed");
         } else {
@@ -214,193 +197,231 @@ const GroupMembersDialog = memo(
 
     return (
       <>
-        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-          <DialogTitle>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Typography variant="h6">
-                Group Members ({members.length})
-              </Typography>
-              {isCurrentUserAdmin && (
-                <IconButton
-                  onClick={() => setShowAddMember(!showAddMember)}
-                  color="primary"
-                  size="small"
-                >
-                  <PersonAddIcon />
-                </IconButton>
-              )}
-            </Box>
-          </DialogTitle>
-
-          <DialogContent>
-            {/* Add Member Section */}
-            {showAddMember && isCurrentUserAdmin && (
-              <Box
-                sx={{
-                  mb: 3,
-                  p: 2,
-                  backgroundColor: "grey.50",
-                  borderRadius: 1,
-                }}
-              >
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Add New Member
-                </Typography>
-                <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    label="Email Address"
-                    value={newMemberEmail}
-                    onChange={(e) => setNewMemberEmail(e.target.value)}
-                    onKeyPress={handleAddMemberKeyPress}
-                    disabled={isAddingMember}
-                    placeholder="Enter email address"
-                  />
-                  <Button
-                    onClick={addNewMember}
-                    variant="primary"
-                    disabled={!newMemberEmail.trim() || isAddingMember}
-                    size="small"
+        {open && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+            <div className="bg-[#2a2b30] rounded-lg shadow-xl w-full max-w-sm overflow-hidden flex flex-col">
+              {/* Dialog Title */}
+              <div className="px-6 py-4 border-b flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Group Members ({members.length})
+                </h3>
+                {isCurrentUserAdmin && (
+                  <button
+                    onClick={() => setShowAddMember(!showAddMember)}
+                    className="p-2 text-[#667eea]-600 hover:bg-[#667eea]-50 rounded-full transition-colors"
                   >
-                    {isAddingMember ? "Adding..." : "Add"}
-                  </Button>
-                </Box>
-              </Box>
-            )}
+                    <FontAwesomeIcon icon={faUserPlus} />
+                  </button>
+                )}
+              </div>
 
-            <Divider sx={{ mb: 2 }} />
-
-            {/* Members List */}
-            {loading ? (
-              <Box sx={{ textAlign: "center", py: 3 }}>
-                <Typography>Loading members...</Typography>
-              </Box>
-            ) : (
-              <List>
-                {members.map((member) => {
-                  const isCurrentUser = member.email === currentUserEmail;
-                  const canManageMember = isCurrentUserAdmin && !isCurrentUser;
-
-                  return (
-                    <ListItem key={member.email} divider>
-                      <ListItemAvatar>
-                        <Avatar src={member.photoURL}>
-                          {member.isAdmin ? (
-                            <AdminIcon color="primary" />
-                          ) : (
-                            <PersonIcon />
-                          )}
-                        </Avatar>
-                      </ListItemAvatar>
-
-                      <ListItemText
-                        primary={
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Typography variant="subtitle2">
-                              {member.displayName}
-                              {isCurrentUser && " (You)"}
-                            </Typography>
-                            {member.isAdmin && (
-                              <Chip
-                                label="Admin"
-                                size="small"
-                                color="primary"
-                                variant="outlined"
-                              />
-                            )}
-                          </Box>
-                        }
-                        secondary={member.email}
+              {/* Dialog Content */}
+              <div className="px-6 py-4 overflow-y-auto max-h-[70vh]">
+                {/* Add Member Section */}
+                {showAddMember && isCurrentUserAdmin && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      Add New Member
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="email"
+                        className="flex-1 px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-[#667eea]-500 disabled:bg-gray-200"
+                        placeholder="Enter email address"
+                        value={newMemberEmail}
+                        onChange={(e) => setNewMemberEmail(e.target.value)}
+                        onKeyPress={handleAddMemberKeyPress}
+                        disabled={isAddingMember}
                       />
+                      <button
+                        onClick={addNewMember}
+                        disabled={!newMemberEmail.trim() || isAddingMember}
+                        className="px-4 py-2 bg-[#667eea]-600 text-white text-sm font-medium rounded-md hover:bg-[#667eea]-700 disabled:bg-[#667eea]-300 transition-colors"
+                      >
+                        {isAddingMember ? "Adding..." : "Add"}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-                      {canManageMember && (
-                        <ListItemSecondaryAction>
-                          <IconButton
-                            edge="end"
-                            onClick={(e) => handleMenuOpen(e, member)}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      )}
-                    </ListItem>
-                  );
-                })}
-              </List>
-            )}
-          </DialogContent>
+                <hr className="mb-4 border-gray-200" />
 
-          <DialogActions>
-            <Button onClick={handleClose} variant="outline">
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
+                {/* Members List */}
+                {loading ? (
+                  <div className="text-center py-6 text-gray-500">
+                    <p>Loading members...</p>
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-gray-100">
+                    {members.map((member) => {
+                      const isCurrentUser = member.email === currentUserEmail;
+                      const canManageMember =
+                        isCurrentUserAdmin && !isCurrentUser;
+
+                      return (
+                        <li
+                          key={member.email}
+                          className="py-3 flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-3">
+                            {/* Avatar Replacement */}
+                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                              {member.photoURL ? (
+                                <img
+                                  src={member.photoURL}
+                                  alt={member.displayName}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <FontAwesomeIcon
+                                  icon={member.isAdmin ? faUserShield : faUser}
+                                  className={
+                                    member.isAdmin
+                                      ? "text-[#667eea]-500"
+                                      : "text-gray-400"
+                                  }
+                                />
+                              )}
+                            </div>
+
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-semibold text-gray-900">
+                                  {member.displayName}
+                                  {isCurrentUser && (
+                                    <span className="text-gray-500 font-normal">
+                                      {" "}
+                                      (You)
+                                    </span>
+                                  )}
+                                </p>
+                                {member.isAdmin && (
+                                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#667eea]-600 border border-[#667eea]-600 rounded-full">
+                                    Admin
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-500">
+                                {member.email}
+                              </p>
+                            </div>
+                          </div>
+
+                          {canManageMember && (
+                            <button
+                              onClick={(e) => handleMenuOpen(e, member)}
+                              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                              <FontAwesomeIcon icon={faEllipsisV} />
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+
+              {/* Dialog Actions */}
+              <div className="px-6 py-4 border-t flex justify-end">
+                <button
+                  onClick={handleClose}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Member Actions Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-        >
-          {selectedMember && (
-            <>
-              <MenuItem
-                onClick={() =>
-                  toggleAdminStatus(
-                    selectedMember.email,
-                    selectedMember.isAdmin
-                  )
-                }
-              >
-                {selectedMember.isAdmin ? "Remove Admin" : "Make Admin"}
-              </MenuItem>
-              <MenuItem
-                onClick={() => removeMember(selectedMember.email)}
-                sx={{ color: "error.main" }}
-              >
-                Remove Member
-              </MenuItem>
-            </>
-          )}
-        </Menu>
+        {Boolean(anchorEl) && (
+          <>
+            {/* Overlay để đóng menu khi click ra ngoài */}
+            <div className="fixed inset-0 z-[60]" onClick={handleMenuClose} />
 
-        {/* Snackbar for notifications */}
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={5000}
-          onClose={() => setSnackbarOpen(false)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            <div
+              className="fixed z-[70] min-w-[150px] bg-[#2a2b30] rounded-md shadow-lg border border-gray-200 py-1"
+              style={{
+                top: anchorEl?.getBoundingClientRect().bottom! + 5,
+                left: anchorEl?.getBoundingClientRect().left! - 100, // Căn chỉnh tùy ý
+              }}
+            >
+              {selectedMember && (
+                <>
+                  <button
+                    onClick={() => {
+                      toggleAdminStatus(
+                        selectedMember.email,
+                        selectedMember.isAdmin,
+                      );
+                      handleMenuClose();
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    {selectedMember.isAdmin ? "Remove Admin" : "Make Admin"}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      removeMember(selectedMember.email);
+                      handleMenuClose();
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium"
+                  >
+                    Remove Member
+                  </button>
+                </>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Snackbar / Toast Notification */}
+        <div
+          className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 transform ${
+            snackbarOpen
+              ? "translate-y-0 opacity-100"
+              : "translate-y-10 opacity-0 pointer-events-none"
+          }`}
         >
-          <Alert
-            onClose={() => setSnackbarOpen(false)}
-            severity={
-              snackbarMessage.includes("successfully") ||
-              snackbarMessage.includes("now an admin")
-                ? "success"
-                : "error"
-            }
-            variant="filled"
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
+          {snackbarOpen && (
+            <div
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-2xl text-white min-w-[300px] ${
+                snackbarMessage.includes("successfully") ||
+                snackbarMessage.includes("now an admin")
+                  ? "bg-[#667eea]-600"
+                  : "bg-red-600"
+              }`}
+            >
+              {/* Icon dựa trên loại thông báo */}
+              <FontAwesomeIcon
+                icon={
+                  snackbarMessage.includes("successfully")
+                    ? faCheckCircle
+                    : faExclamationCircle
+                }
+                className="text-lg"
+              />
+
+              <span className="flex-1 text-sm font-medium">
+                {snackbarMessage}
+              </span>
+
+              {/* Nút Close */}
+              <button
+                onClick={() => setSnackbarOpen(false)}
+                className="ml-2 hover:bg-[#2a2b30]/20 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
+              >
+                <FontAwesomeIcon icon={faTimes} size="xs" />
+              </button>
+            </div>
+          )}
+        </div>
       </>
     );
-  }
+  },
 );
 
 GroupMembersDialog.displayName = "GroupMembersDialog";

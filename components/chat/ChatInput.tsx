@@ -2,62 +2,11 @@
 
 import React, { useState, useRef, memo } from "react";
 import styled from "styled-components";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import SendIcon from "@mui/icons-material/Send";
+
 import { IconButton } from "../common/Button";
 import EmojiPicker from "./EmojiPicker";
-
-const InputContainer = styled.form`
-  display: flex;
-  align-items: center;
-  padding: 16px 24px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  position: sticky;
-  bottom: 0;
-  z-index: 100;
-  gap: 12px;
-  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-`;
-
-const MessageInput = styled.input`
-  flex: 1;
-  outline: none;
-  border: 1px solid rgba(103, 126, 234, 0.2);
-  border-radius: 25px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  padding: 14px 20px;
-  font-size: 15px;
-  color: #333;
-  transition: all 0.3s ease;
-  font-weight: 400;
-  letter-spacing: 0.3px;
-
-  &:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(103, 126, 234, 0.1);
-    background: rgba(255, 255, 255, 0.95);
-    transform: translateY(-1px);
-  }
-
-  &::placeholder {
-    color: #8b5cf6;
-    opacity: 0.7;
-  }
-`;
-
-const ActionsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const HiddenFileInput = styled.input`
-  display: none;
-`;
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPaperclip, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
 interface ChatInputProps {
   value: string;
@@ -112,69 +61,63 @@ const ChatInput = memo(
     const canSend = value.trim().length > 0 && !disabled;
 
     return (
-      <InputContainer onSubmit={handleSubmit}>
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-center gap-2 p-2 bg-[#2a2b30] backdrop-blur-md rounded-2xl border border-white/20"
+      >
         <EmojiPicker onEmojiSelect={handleEmojiSelect} />
 
-        <MessageInput
+        <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
+          className="flex-1 bg-[#2a2b30] border-none outline-none px-3 py-2 text-white placeholder-gray-400 disabled:cursor-not-allowed"
         />
 
-        <ActionsContainer>
-          <IconButton
+        <div className="flex items-center gap-2">
+          {/* Nút đính kèm file */}
+          <button
+            type="button"
             onClick={handleFileClick}
             disabled={disabled}
-            style={{
-              background: "rgba(103, 126, 234, 0.1)",
-              border: "1px solid rgba(103, 126, 234, 0.2)",
-              borderRadius: "12px",
-              transition: "all 0.3s ease",
-            }}
+            className="flex items-center justify-center w-10 h-10 rounded-[12px] bg-[#677eea]/10 border border-[#677eea]/20 text-[#667eea] transition-all duration-300 hover:bg-[#677eea]/20 active:scale-95 disabled:opacity-50"
           >
-            <AttachFileIcon sx={{ fontSize: 22, color: "#667eea" }} />
-          </IconButton>
+            <FontAwesomeIcon icon={faPaperclip} className="text-lg" />
+          </button>
 
-          <IconButton
-            onClick={() => {
-              if (canSend) {
-                onSend();
-              }
-            }}
+          {/* Nút gửi tin nhắn */}
+          <button
+            type="button"
+            onClick={() => canSend && onSend()}
             disabled={!canSend}
-            style={{
-              background: canSend
-                ? "linear-gradient(135deg, #667eea, #764ba2)"
-                : "rgba(139, 92, 246, 0.1)",
-              color: canSend ? "white" : "#8B5CF6",
-              border: `1px solid ${
-                canSend ? "transparent" : "rgba(139, 92, 246, 0.2)"
-              }`,
-              borderRadius: "12px",
-              transition: "all 0.3s ease",
-              transform: canSend ? "scale(1.05)" : "scale(1)",
-              boxShadow: canSend
-                ? "0 4px 20px rgba(103, 126, 234, 0.3)"
-                : "none",
-            }}
+            className={`
+        flex items-center justify-center w-10 h-10 rounded-[12px] transition-all duration-300
+        ${
+          canSend
+            ? "bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white scale-105 shadow-[0_4px_20px_rgba(103,126,234,0.3)] hover:brightness-110 active:scale-100"
+            : "bg-violet-500/10 border border-violet-500/20 text-[#8B5CF6] scale-100 opacity-60"
+        }
+      `}
           >
-            <SendIcon sx={{ fontSize: 22 }} />
-          </IconButton>
-        </ActionsContainer>
+            <FontAwesomeIcon icon={faPaperPlane} className="text-lg" />
+          </button>
+        </div>
 
-        <HiddenFileInput
+        {/* Input file ẩn */}
+        <input
           ref={fileInputRef}
           type="file"
           multiple
           onChange={handleFileChange}
           accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+          className="hidden"
         />
-      </InputContainer>
+      </form>
     );
-  }
+  },
 );
 
 ChatInput.displayName = "ChatInput";

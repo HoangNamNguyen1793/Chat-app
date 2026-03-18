@@ -1,208 +1,16 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-import { collection, query, where, orderBy, limit } from "firebase/firestore";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { collection, limit, orderBy, query, where } from "firebase/firestore";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { db } from "../../config/firebase";
-import { IMessage } from "../../types";
-import { transformMessage } from "../../utils/getMessagesInConversation";
-import { IconButton } from "@mui/material";
+import { useMediaQuery } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import MenuIcon from "@mui/icons-material/Menu";
 import ImageModal from "../modals/ImageModal";
-import { useMediaQuery } from "@mui/material";
-
-const SidebarContainer = styled.div<{ isOpen: boolean }>`
-  height: 100vh;
-  overflow-y: scroll;
-  border-right: 1px solid whitesmoke;
-  transition: all 0.3s ease-in-out;
-  position: fixed;
-  top: 0;
-  right: 0;
-  background-color: white;
-  z-index: 1000;
-
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-  }
-
-  width: 400px;
-  min-width: 300px;
-  max-width: 400px;
-  transform: ${({ isOpen }) => (isOpen ? "translateX(0)" : "translateX(100%)")};
-  visibility: ${({ isOpen }) => (isOpen ? "visible" : "hidden")};
-  opacity: ${({ isOpen }) => (isOpen ? "1" : "0")};
-
-  @media (max-width: 768px) {
-    z-index: 1000;
-    width: 80%;
-    max-width: 320px;
-    min-width: auto;
-    transform: ${({ isOpen }) =>
-      isOpen ? "translateX(0)" : "translateX(100%)"};
-    box-shadow: ${({ isOpen }) =>
-      isOpen ? "0 0 10px rgba(0, 0, 0, 0.2)" : "none"};
-    visibility: ${({ isOpen }) => (isOpen ? "visible" : "hidden")};
-    opacity: ${({ isOpen }) => (isOpen ? "1" : "0")};
-  }
-`;
-
-const SidebarHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  height: 80px;
-  border-bottom: 1px solid var(--border-color, #e0e0e0);
-  background-color: var(--header-bg, #f0f0f0);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-`;
-
-const SidebarTitle = styled.h3`
-  margin: 0;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-color, #111b21);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  word-break: break-all;
-
-  @media (max-width: 768px) {
-    font-size: 1rem;
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-`;
-
-const SidebarContent = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  background-color: var(--sidebar-bg, #ffffff);
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-  }
-`;
-
-const SectionTitle = styled.h4`
-  margin: 0 0 12px 0;
-  color: var(--text-color, #111b21);
-  font-size: 14px;
-  font-weight: 500;
-`;
-
-const ImagesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 24px;
-`;
-
-const ImageItem = styled.div`
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-
-  &:hover::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-  }
-`;
-
-const StyledImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const FilesList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 24px;
-`;
-
-const FileItem = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  border-radius: 8px;
-  background-color: var(--input-bg, #f0f2f5);
-  text-decoration: none;
-  color: var(--text-color, #111b21);
-  transition: background-color 0.2s ease;
-  cursor: pointer;
-
-  &:hover {
-    background-color: var(--border-color, #e0e0e0);
-  }
-`;
-
-const FileIcon = styled.div`
-  margin-right: 12px;
-  color: var(--text-secondary, #667781);
-`;
-
-const FileName = styled.span`
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const Overlay = styled.div<{ isOpen: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  display: ${({ isOpen }) => (isOpen ? "block" : "none")};
-`;
+import { db } from "../../config/firebase";
+import { IMessage } from "../../types";
+import { transformMessage } from "../../utils/getMessagesInConversation";
 
 interface ImageSidebarProps {
   conversationId: string;
@@ -210,192 +18,264 @@ interface ImageSidebarProps {
   toggleSidebar: () => void;
 }
 
-const ImageSidebar: React.FC<ImageSidebarProps> = ({
+const IMAGE_EXTENSIONS = [
+  "jpeg",
+  "jpg",
+  "png",
+  "gif",
+  "webp",
+  "bmp",
+  "svg",
+  "avif",
+  "heic",
+  "heif",
+];
+
+const isImageFile = (url?: string | null) => {
+  if (!url) return false;
+
+  const normalizedUrl = url.toLowerCase();
+  const pathWithoutQuery = normalizedUrl.split("?")[0];
+  const extension = pathWithoutQuery.split(".").pop();
+
+  return (
+    normalizedUrl.includes("image/upload") ||
+    normalizedUrl.includes("/images/") ||
+    !!(extension && IMAGE_EXTENSIONS.includes(extension))
+  );
+};
+
+const getFileName = (url?: string | null) => {
+  if (!url) return "Attachment";
+
+  try {
+    const parsedUrl = new URL(url);
+    const fileName = parsedUrl.pathname.split("/").pop();
+    return decodeURIComponent(fileName || "Attachment");
+  } catch {
+    return decodeURIComponent(url.split("/").pop() || "Attachment");
+  }
+};
+
+const formatSentAt = (sentAt?: string | null) => sentAt || "Unknown time";
+
+const ImageSidebar = ({
   conversationId,
   isOpen,
   toggleSidebar,
-}) => {
-  const [images, setImages] = useState<IMessage[]>([]);
-  const [files, setFiles] = useState<IMessage[]>([]);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+}: ImageSidebarProps) => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [selectedImage, setSelectedImage] = useState("");
-  const isMobile = useMediaQuery("(max-width:768px)");
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
-  const imagesQuery = query(
+  const mediaQuery = query(
     collection(db, "messages"),
     where("conversation_id", "==", conversationId),
     where("fileUrl", "!=", null),
     orderBy("fileUrl"),
-    orderBy("sent_at", "desc")
+    orderBy("sent_at", "desc"),
+    limit(200),
   );
 
-  const [messagesSnapshot, messagesLoading, messagesError] =
-    useCollection(imagesQuery);
+  const [snapshot, loading, error] = useCollection(mediaQuery);
+
+  const mediaMessages = useMemo(() => {
+    if (!snapshot) return [];
+
+    return snapshot.docs
+      .map((doc) => transformMessage(doc) as IMessage)
+      .filter((message) => !!message.fileUrl && !(message as any).isDeleted);
+  }, [snapshot]);
+
+  const images = useMemo(
+    () => mediaMessages.filter((message) => isImageFile(message.fileUrl)),
+    [mediaMessages],
+  );
+
+  const files = useMemo(
+    () => mediaMessages.filter((message) => !isImageFile(message.fileUrl)),
+    [mediaMessages],
+  );
 
   useEffect(() => {
-    if (messagesSnapshot) {
-      console.log("Messages snapshot:", messagesSnapshot.docs.length);
+    if (!isOpen || !isMobile) return;
 
-      const mediaMessages = messagesSnapshot.docs.map((doc) => {
-        const message = transformMessage(doc);
-        console.log("Message with fileUrl:", message.fileUrl);
-        return message;
-      });
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
-      const imageMessages = mediaMessages.filter((msg) => {
-        if (!msg.fileUrl) return false;
-
-        const imageExtensions = [
-          "jpeg",
-          "jpg",
-          "png",
-          "gif",
-          "webp",
-          "bmp",
-          "svg",
-          "avif",
-          "heic",
-          "heif",
-        ];
-        const urlParts = msg.fileUrl.split("?")[0];
-        const extension = urlParts.split(".").pop()?.toLowerCase();
-
-        const isImage =
-          (extension && imageExtensions.includes(extension)) ||
-          msg.fileUrl.includes("/images/") ||
-          msg.fileUrl.match(/image\/(jpeg|jpg|png|gif|webp|bmp|svg)/);
-        console.log("Is image?", msg.fileUrl, isImage);
-        return isImage;
-      });
-
-      const fileMessages = mediaMessages.filter(
-        (msg) => msg.fileUrl && !imageMessages.includes(msg)
-      );
-
-      console.log("Filtered images:", imageMessages.length);
-      console.log("Filtered files:", fileMessages.length);
-
-      setImages(imageMessages);
-      setFiles(fileMessages);
-    }
-  }, [messagesSnapshot]);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isMobile, isOpen]);
 
   const openImageModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setIsImageModalOpen(true);
   };
 
-  const handleFileDownload = async (fileUrl: string, fileName: string) => {
+  const handleFileDownload = (fileUrl: string, fileName: string) => {
     try {
-      const url = new URL(fileUrl);
-    } catch (error) {
-      console.error("Invalid file URL:", error);
-      alert("Unable to download file: Invalid URL");
-      return;
-    }
-
-    try {
-      const response = await fetch(fileUrl);
-      if (!response.ok) throw new Error("Failed to fetch file");
-
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
       const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = fileName;
+      link.href = fileUrl;
+      link.download = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-    } catch (error) {
-      console.error("Error downloading file:", error);
-
+    } catch (downloadError) {
+      console.error("Error downloading file:", downloadError);
       window.open(fileUrl, "_blank", "noopener,noreferrer");
     }
   };
 
   return (
     <>
-      <Overlay isOpen={isOpen} onClick={toggleSidebar} />
+      {isMobile && (
+        <div
+          onClick={toggleSidebar}
+          className={`fixed inset-0 z-[69] bg-[#2a2b30] transition-opacity duration-300 ${
+            isOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }`}
+        />
+      )}
 
-      <SidebarContainer isOpen={isOpen}>
-        <SidebarHeader>
-          <SidebarTitle>Media, Links and Docs</SidebarTitle>
-          <IconButton
+      <aside
+        className={`fixed top-0 right-0 z-[70] flex h-screen w-full max-w-[360px] flex-col border-l border-white/10 bg-[#1e1f22] shadow-2xl transition-transform duration-300 ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Media & Files</h2>
+            <p className="mt-1 text-xs text-gray-400">
+              {mediaMessages.length} attachment
+              {mediaMessages.length === 1 ? "" : "s"}
+            </p>
+          </div>
+
+          <button
             onClick={toggleSidebar}
-            sx={{
-              color: "var(--text-color, #111b21)",
-              "&:hover": {
-                backgroundColor: "var(--border-color, #e0e0e0)",
-              },
-            }}
+            className="rounded-full p-2 text-gray-400 transition-colors hover:bg-[#2a2b30]/10 hover:text-white"
+            aria-label="Close media sidebar"
           >
-            <CloseIcon />
-          </IconButton>
-        </SidebarHeader>
+            <CloseIcon fontSize="small" />
+          </button>
+        </div>
 
-        <SidebarContent>
-          {images.length > 0 && (
-            <>
-              <SectionTitle>Images ({images.length})</SectionTitle>
-              <ImagesGrid>
-                {images.map((image, index) => (
-                  <ImageItem
-                    key={image.id}
-                    onClick={() => openImageModal(image.fileUrl || "")}
-                  >
-                    <StyledImage
-                      src={image.fileUrl}
-                      alt={`Image ${index + 1}`}
-                    />
-                  </ImageItem>
-                ))}
-              </ImagesGrid>
-            </>
-          )}
-
-          {files.length > 0 && (
-            <>
-              <SectionTitle>Documents ({files.length})</SectionTitle>
-              <FilesList>
-                {files.map((file) => (
-                  <FileItem
-                    key={file.id}
-                    onClick={() =>
-                      handleFileDownload(
-                        file.fileUrl!,
-                        file.fileUrl?.split("/").pop() || "File"
-                      )
-                    }
-                  >
-                    <FileIcon>
-                      <InsertDriveFileIcon />
-                    </FileIcon>
-                    <FileName>
-                      {file.fileUrl?.split("/").pop() || "File"}
-                    </FileName>
-                  </FileItem>
-                ))}
-              </FilesList>
-            </>
-          )}
-
-          {images.length === 0 && files.length === 0 && (
-            <div
-              style={{
-                textAlign: "center",
-                marginTop: "40px",
-                color: "var(--text-secondary, #667781)",
-              }}
-            >
-              <ImageIcon style={{ fontSize: 48, opacity: 0.5 }} />
-              <p>No media found in this conversation</p>
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          {loading && (
+            <div className="rounded-xl border border-white/10 bg-[#2a2b30]/[0.03] px-4 py-6 text-center text-sm text-gray-400">
+              Loading attachments...
             </div>
           )}
-        </SidebarContent>
-      </SidebarContainer>
+
+          {error && (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-6 text-center text-sm text-red-200">
+              Failed to load media for this conversation.
+            </div>
+          )}
+
+          {!loading && !error && mediaMessages.length === 0 && (
+            <div className="rounded-xl border border-dashed border-white/10 px-4 py-10 text-center text-sm text-gray-400">
+              No images or files have been shared in this chat yet.
+            </div>
+          )}
+
+          {!loading && !error && mediaMessages.length > 0 && (
+            <div className="space-y-6">
+              <section>
+                <div className="mb-3 flex items-center gap-2 text-sm font-medium text-white">
+                  <ImageIcon fontSize="small" />
+                  <span>Images</span>
+                  <span className="text-xs text-gray-500">
+                    ({images.length})
+                  </span>
+                </div>
+
+                {images.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {images.map((image) => (
+                      <button
+                        key={image.id}
+                        onClick={() =>
+                          image.fileUrl && openImageModal(image.fileUrl)
+                        }
+                        className="group overflow-hidden rounded-xl border border-white/10 bg-[#2a2b30]/[0.03] text-left transition-all hover:border-white/20 hover:bg-[#2a2b30]/[0.06]"
+                      >
+                        <img
+                          src={image.fileUrl}
+                          alt={getFileName(image.fileUrl)}
+                          className="h-32 w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                        />
+                        <div className="px-3 py-2">
+                          <p className="truncate text-xs font-medium text-gray-200">
+                            {getFileName(image.fileUrl)}
+                          </p>
+                          <p className="mt-1 text-[11px] text-gray-500">
+                            {formatSentAt(image.sent_at)}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-white/10 bg-[#2a2b30]/[0.03] px-4 py-4 text-sm text-gray-400">
+                    No images found.
+                  </div>
+                )}
+              </section>
+
+              <section>
+                <div className="mb-3 flex items-center gap-2 text-sm font-medium text-white">
+                  <InsertDriveFileIcon fontSize="small" />
+                  <span>Files</span>
+                  <span className="text-xs text-gray-500">
+                    ({files.length})
+                  </span>
+                </div>
+
+                {files.length > 0 ? (
+                  <div className="space-y-2">
+                    {files.map((file) => (
+                      <button
+                        key={file.id}
+                        onClick={() =>
+                          file.fileUrl &&
+                          handleFileDownload(
+                            file.fileUrl,
+                            getFileName(file.fileUrl),
+                          )
+                        }
+                        className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-[#2a2b30]/[0.03] px-3 py-3 text-left transition-all hover:border-white/20 hover:bg-[#2a2b30]/[0.06]"
+                      >
+                        <div className="rounded-lg bg-[#2a2b30]/10 p-2 text-gray-300">
+                          <InsertDriveFileIcon fontSize="small" />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-gray-200">
+                            {getFileName(file.fileUrl)}
+                          </p>
+                          <p className="mt-1 text-[11px] text-gray-500">
+                            {formatSentAt(file.sent_at)}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-white/10 bg-[#2a2b30]/[0.03] px-4 py-4 text-sm text-gray-400">
+                    No non-image files found.
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+        </div>
+      </aside>
 
       <ImageModal
         imageUrl={selectedImage}

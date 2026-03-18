@@ -5,60 +5,45 @@ import Image from "next/image";
 import { CircularProgress } from "@mui/material";
 import { memo } from "react";
 
-const StyledContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: var(--background-color, #f0f0f0);
-`;
-
-const StyledImageWrapper = styled.div`
-  margin-bottom: 50px;
-  animation: pulse 2s infinite;
-  
-  @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
-  }
-`;
-
-const LoadingText = styled.p`
-  margin-top: 20px;
-  color: var(--text-color, #555);
-  font-size: 14px;
-  text-align: center;
-`;
-
 interface LoadingProps {
   text?: string;
   showLogo?: boolean;
 }
 
-const Loading = memo(({ text = "Loading...", showLogo = true }: LoadingProps) => {
-  return (
-    <StyledContainer>
-      {showLogo && (
-        <StyledImageWrapper>
-          <Image
-            src="/assets/whatsapplogo.png"
-            alt="WhatsApp Logo"
-            height={200}
-            width={200}
-            priority
-          />
-        </StyledImageWrapper>
-      )}
-      
-      <CircularProgress size={40} sx={{ color: '#25d366' }} />
-      {text && <LoadingText>{text}</LoadingText>}
-    </StyledContainer>
-  );
-});
+const Loading = memo(
+  ({ text = "Loading...", showLogo = true }: LoadingProps) => {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen w-full bg-[#111214]">
+        {/* Logo Wrapper */}
+        {showLogo && (
+          <div className="mb-10 animate-pulse">
+            <Image
+              src="/assets/whatsapplogo.png"
+              alt="WhatsApp Logo"
+              height={200}
+              width={200}
+              priority
+              className="object-contain"
+            />
+          </div>
+        )}
 
-Loading.displayName = 'Loading';
+        {/* Custom Loading Spinner (Thay thế MUI CircularProgress) */}
+        <div className="relative flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-[#25d366]/20 border-t-[#25d366] rounded-full animate-spin"></div>
+        </div>
+
+        {/* Loading Text */}
+        {text && (
+          <p className="mt-6 text-gray-400 text-sm font-medium tracking-wide animate-bounce">
+            {text}
+          </p>
+        )}
+      </div>
+    );
+  },
+);
+
+Loading.displayName = "Loading";
 
 export default Loading;
-

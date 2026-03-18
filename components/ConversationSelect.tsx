@@ -11,29 +11,8 @@ import GroupIcon from "@mui/icons-material/Group";
 import { useDocument } from "react-firebase-hooks/firestore";
 import { doc } from "firebase/firestore";
 import { db } from "../config/firebase";
-
-const StyledContainer = styled.div`
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 15px;
-  word-break: break-all;
-
-  :hover {
-    background-color: #e9eaeb;
-  }
-`;
-
-const StyledGroupIconContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #e0e0e0;
-  margin-right: 12px;
-`;
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUsers } from "@fortawesome/free-solid-svg-icons";
 
 const ConversationSelect = ({
   id,
@@ -64,20 +43,33 @@ const ConversationSelect = ({
       : recipientName;
 
   return (
-    <StyledContainer onClick={onSelectConversation}>
+    <div
+      onClick={onSelectConversation}
+      className="flex items-center gap-3 p-3 cursor-pointer transition-colors duration-200 hover:bg-gray-100 active:bg-gray-200 rounded-lg group"
+    >
       {isGroup ? (
-        <StyledGroupIconContainer>
-          <GroupIcon style={{ color: "#666", fontSize: "20px" }} />
-        </StyledGroupIconContainer>
+        /* Group Icon Container */
+        <div className="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full transition-colors group-hover:bg-gray-300">
+          <FontAwesomeIcon icon={faUsers} className="text-gray-600 text-lg" />
+        </div>
       ) : (
-        <RecipientAvatar
-          recipient={recipient}
-          recipientEmail={recipientEmail}
-          recipientName={recipientName}
-        />
+        /* Recipient Avatar */
+        <div className="flex-shrink-0">
+          <RecipientAvatar
+            recipient={recipient}
+            recipientEmail={recipientEmail}
+            recipientName={recipientName}
+            // Lưu ý: Đảm bảo bên trong RecipientAvatar bạn cũng dùng Tailwind
+            // để set class "w-10 h-10 rounded-full object-cover"
+          />
+        </div>
       )}
-      <span>{displayName}</span>
-    </StyledContainer>
+
+      {/* Display Name */}
+      <span className="flex-1 font-medium text-gray-300 truncate group-hover:text-gray-900">
+        {displayName}
+      </span>
+    </div>
   );
 };
 

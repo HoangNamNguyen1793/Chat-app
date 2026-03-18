@@ -7,72 +7,6 @@ import { Conversation } from "../../types";
 import UserAvatar from "../common/Avatar";
 import { getRecipientName } from "../../utils/getRecipientName";
 
-const ItemContainer = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  cursor: pointer;
-  border-bottom: 1px solid var(--border-light, #f0f0f0);
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: var(--hover-bg, #f5f6f6);
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const ConversationInfo = styled.div`
-  flex: 1;
-  min-width: 0;
-  margin-left: 12px;
-`;
-
-const RecipientName = styled.div`
-  font-size: 16px;
-  font-weight: 400;
-  color: var(--text-color, #111b21);
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const LastMessage = styled.div`
-  font-size: 13px;
-  color: var(--text-secondary, #667781);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const ConversationMeta = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-`;
-
-const Timestamp = styled.span`
-  font-size: 12px;
-  color: var(--text-secondary, #667781);
-`;
-
-const UnreadBadge = styled.div`
-  background-color: #25d366;
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 500;
-`;
-
 interface ConversationItemProps {
   conversation: Conversation;
   onClick: () => void;
@@ -90,33 +24,60 @@ const ConversationItem = memo(
     unreadCount = 0,
   }: ConversationItemProps) => {
     const { recipient, recipientEmail, recipientName } = useRecipient(
-      conversation.users
+      conversation.users,
     );
 
     return (
-      <ItemContainer onClick={onClick}>
+      <div
+        onClick={onClick}
+        className="flex items-center p-3 gap-3 cursor-pointer transition-all duration-200 hover:bg-[#2a2b30]/5 active:bg-[#2a2b30]/10 group"
+      >
+        {/* Avatar - Sử dụng component Avatar bạn đã chuyển đổi trước đó */}
         <UserAvatar
           src={recipient?.photoURL}
           name={recipientName}
           email={recipientEmail}
-          size="medium"
+          size="small"
           margin="0"
         />
 
-        <ConversationInfo>
-          <RecipientName>{recipientName}</RecipientName>
-          {lastMessage && <LastMessage>{lastMessage}</LastMessage>}
-        </ConversationInfo>
+        {/* Thông tin chính của cuộc hội thoại */}
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <h4 className="text-[15px] font-semibold text-gray-100 truncate group-hover:text-white transition-colors">
+            {recipientName}
+          </h4>
 
-        <ConversationMeta>
-          {timestamp && <Timestamp>{timestamp}</Timestamp>}
-          {unreadCount > 0 && (
-            <UnreadBadge>{unreadCount > 9 ? "9+" : unreadCount}</UnreadBadge>
+          {lastMessage && (
+            <p className="text-sm text-gray-500 truncate leading-tight">
+              {lastMessage}
+            </p>
           )}
-        </ConversationMeta>
-      </ItemContainer>
+        </div>
+
+        {/* Meta data: Thời gian và Số tin nhắn chưa đọc */}
+        <div className="flex flex-col items-end justify-between self-stretch py-0.5">
+          {timestamp && (
+            <span className="text-[11px] text-gray-500 font-medium whitespace-nowrap">
+              {timestamp}
+            </span>
+          )}
+
+          {unreadCount > 0 && (
+            <div
+              className="
+        mt-1 min-w-[18px] h-[18px] px-1 
+        flex items-center justify-center 
+        bg-[#25d366] text-black text-[10px] font-bold 
+        rounded-full shadow-lg animate-in zoom-in duration-300
+      "
+            >
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </div>
+          )}
+        </div>
+      </div>
     );
-  }
+  },
 );
 
 ConversationItem.displayName = "ConversationItem";

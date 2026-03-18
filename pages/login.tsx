@@ -13,47 +13,9 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { TextField, Typography, Tabs, Tab, Box, Divider } from "@mui/material";
-
-const StyledContainer = styled.div`
-  height: 100vh;
-  display: grid;
-  place-items: center;
-  background: url("https://t3.ftcdn.net/jpg/03/27/51/56/360_F_327515607_Hcps04aaEc7Ki43d1XZPxwcv0ZaIaorh.jpg");
-`;
-
-const StyledLoginContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px;
-  background-color: white;
-  border-radius: 5px;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  width: 400px;
-`;
-
-const StyledImageWrapper = styled.div`
-  margin-bottom: 30px;
-`;
-
-const StyledForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 15px;
-  margin-top: 20px;
-`;
-
-const StyledDivider = styled(Divider)`
-  width: 100%;
-  margin: 20px 0;
-`;
-
-const StyledErrorMessage = styled(Typography)`
-  color: #d32f2f;
-  font-size: 14px;
-  margin-top: 5px;
-`;
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -134,7 +96,7 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       const user = userCredential.user;
 
@@ -155,7 +117,7 @@ const Login = () => {
       console.error("Lỗi đăng nhập:", error);
       if (error.code === "auth/user-not-found") {
         setError(
-          "Email này chưa được đăng ký. Vui lòng đăng ký trước khi đăng nhập."
+          "Email này chưa được đăng ký. Vui lòng đăng ký trước khi đăng nhập.",
         );
       } else if (error.code === "auth/wrong-password") {
         setError("Mật khẩu không chính xác");
@@ -167,13 +129,13 @@ const Login = () => {
         setError("Email không hợp lệ");
       } else if (error.code === "auth/network-request-failed") {
         setError(
-          "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet của bạn."
+          "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet của bạn.",
         );
       } else {
         setError(
           `Đã xảy ra lỗi khi đăng nhập: ${
             error.message || "Vui lòng thử lại sau."
-          }`
+          }`,
         );
       }
     } finally {
@@ -208,7 +170,7 @@ const Login = () => {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       const user = userCredential.user;
 
@@ -246,21 +208,21 @@ const Login = () => {
             setError(
               `Email này đã được đăng ký bởi ${
                 userData.displayName || "người dùng khác"
-              }. Bạn có thể thử đăng nhập hoặc sử dụng email khác.`
+              }. Bạn có thể thử đăng nhập hoặc sử dụng email khác.`,
             );
           } else {
             console.log(
               "Email tồn tại trong Authentication nhưng không có trong Firestore:",
-              email
+              email,
             );
             setError(
-              "Email này đã được đăng ký nhưng chưa hoàn tất thiết lập. Bạn có thể thử đăng nhập hoặc sử dụng email khác."
+              "Email này đã được đăng ký nhưng chưa hoàn tất thiết lập. Bạn có thể thử đăng nhập hoặc sử dụng email khác.",
             );
           }
         } catch (checkError) {
           console.error("Lỗi khi kiểm tra Firestore:", checkError);
           setError(
-            "Email này đã được đăng ký. Bạn có thể thử đăng nhập hoặc sử dụng email khác."
+            "Email này đã được đăng ký. Bạn có thể thử đăng nhập hoặc sử dụng email khác.",
           );
         }
 
@@ -269,7 +231,7 @@ const Login = () => {
         setPassword("");
       } else if (error.code === "auth/operation-not-allowed") {
         setError(
-          "Phương thức đăng ký bằng email/mật khẩu chưa được bật trong Firebase"
+          "Phương thức đăng ký bằng email/mật khẩu chưa được bật trong Firebase",
         );
       } else if (error.code === "auth/weak-password") {
         setError("Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn");
@@ -277,13 +239,13 @@ const Login = () => {
         setError("Email không hợp lệ");
       } else if (error.code === "auth/network-request-failed") {
         setError(
-          "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet của bạn."
+          "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet của bạn.",
         );
       } else {
         setError(
           `Đã xảy ra lỗi khi đăng ký: ${
             error.message || "Vui lòng thử lại sau."
-          }`
+          }`,
         );
       }
     } finally {
@@ -292,151 +254,156 @@ const Login = () => {
   };
 
   return (
-    <StyledContainer>
-      <Head>
-        <title>Đăng nhập</title>
-      </Head>
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#2a2b30] p-4">
+      <div className="w-full max-w-md bg-[#2a2b30] rounded-2xl shadow-xl p-8 flex flex-col items-center">
+        {/* Logo */}
 
-      <StyledLoginContainer>
-        <StyledImageWrapper>
-          <Image
-            src={WhatsAppLogo}
-            alt="Whatsapp Logo"
-            height="100px"
-            width="100px"
-          />
-        </StyledImageWrapper>
+        {/* Custom Tabs */}
+        <div className="w-full flex border-b border-gray-200 mb-6">
+          <button
+            onClick={() => setTabValue(0)}
+            className={`flex-1 py-3 text-sm font-semibold transition-all border-b-2 ${
+              tabValue === 0
+                ? "border-[#667eea]-500 text-white "
+                : "border-transparent text-gray-300 hover:text-gray-300"
+            }`}
+          >
+            Đăng nhập
+          </button>
+          <button
+            onClick={() => setTabValue(1)}
+            className={`flex-1 py-3 text-sm font-semibold transition-all border-b-2 ${
+              tabValue === 1
+                ? "border-[#667eea]-500 text-white"
+                : "border-transparent text-gray-300 hover:text-gray-300"
+            }`}
+          >
+            Đăng ký
+          </button>
+        </div>
 
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          variant="fullWidth"
-          sx={{ width: "100%" }}
-        >
-          <Tab label="Đăng nhập" />
-          <Tab label="Đăng ký" />
-        </Tabs>
+        {/* Tab Panel Content */}
+        <div className="w-full min-h-[320px]">
+          <form
+            onSubmit={tabValue === 0 ? handleSignIn : handleSignUp}
+            className="space-y-4"
+          >
+            {/* Trường Tên hiển thị (Chỉ hiện khi ở tab Đăng ký) */}
+            {tabValue === 1 && (
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-300 uppercase tracking-tight">
+                  Tên hiển thị
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#667eea]-500 outline-none transition-all"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Nguyễn Văn A"
+                />
+              </div>
+            )}
 
-        <TabPanel value={tabValue} index={0}>
-          <StyledForm onSubmit={handleSignIn}>
-            <TextField
-              label="Email"
-              type="email"
-              variant="outlined"
-              fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <TextField
-              label="Mật khẩu"
-              type="password"
-              variant="outlined"
-              fullWidth
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            {error && <StyledErrorMessage>{error}</StyledErrorMessage>}
-            <Button
-              variant="contained"
+            {/* Email */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-300 uppercase tracking-tight">
+                Email
+              </label>
+              <input
+                type="email"
+                required
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#667eea]-500 outline-none transition-all"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@mail.com"
+              />
+            </div>
+
+            {/* Mật khẩu */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-300 uppercase tracking-tight">
+                Mật khẩu
+              </label>
+              <input
+                type="password"
+                required
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#667eea]-500 outline-none transition-all"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+            </div>
+
+            {/* Xác nhận mật khẩu (Chỉ hiện ở tab Đăng ký) */}
+            {tabValue === 1 && (
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-300 uppercase tracking-tight">
+                  Xác nhận mật khẩu
+                </label>
+                <input
+                  type="password"
+                  required
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:ring-2 outline-none transition-all ${
+                    password !== confirmPassword && confirmPassword !== ""
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-gray-200 focus:ring-[#667eea]-500"
+                  }`}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+                {password !== confirmPassword && confirmPassword !== "" && (
+                  <p className="text-red-500 text-xs mt-1 italic">
+                    Mật khẩu không khớp
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Thông báo lỗi chung */}
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg flex items-center gap-2 animate-shake">
+                <span className="font-bold underline text-xs">Lỗi:</span>{" "}
+                {error}
+              </div>
+            )}
+
+            {/* Nút Submit chính */}
+            <button
               type="submit"
-              fullWidth
               disabled={isLoading}
-              sx={{
-                backgroundColor: "#43a047",
-                color: "#fff",
-                "&.MuiButton-contained": {
-                  color: "#fff !important",
-                },
-                "&:hover": {
-                  backgroundColor: "#388e3c",
-                },
-              }}
+              className="w-full py-3 bg-[#667eea]-600 hover:bg-[#667eea]-700 text-white font-bold rounded-lg shadow-lg shadow-[#667eea]-200 transition-all active:scale-[0.98] disabled:bg-gray-300 disabled:shadow-none mt-4 flex items-center justify-center gap-2"
             >
-              {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
-            </Button>
-          </StyledForm>
-        </TabPanel>
+              {isLoading && <FontAwesomeIcon icon={faCircleNotch} spin />}
+              {tabValue === 0
+                ? isLoading
+                  ? "Login..."
+                  : "Login"
+                : isLoading
+                  ? "Register..."
+                  : "Register"}
+            </button>
+          </form>
+        </div>
 
-        <TabPanel value={tabValue} index={1}>
-          <StyledForm onSubmit={handleSignUp}>
-            <TextField
-              label="Tên hiển thị"
-              type="text"
-              variant="outlined"
-              fullWidth
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              required
-            />
-            <TextField
-              label="Email"
-              type="email"
-              variant="outlined"
-              fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <TextField
-              label="Mật khẩu"
-              type="password"
-              variant="outlined"
-              fullWidth
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <TextField
-              label="Xác nhận mật khẩu"
-              type="password"
-              variant="outlined"
-              fullWidth
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              error={password !== confirmPassword && confirmPassword !== ""}
-              helperText={
-                password !== confirmPassword && confirmPassword !== ""
-                  ? "Mật khẩu không khớp"
-                  : ""
-              }
-            />
-            {error && <StyledErrorMessage>{error}</StyledErrorMessage>}
-            <Button
-              variant="contained"
-              type="submit"
-              fullWidth
-              disabled={isLoading}
-              sx={{
-                backgroundColor: "#43a047",
-                color: "#fff",
-                "&.MuiButton-contained": {
-                  color: "#fff !important",
-                },
-                "&:hover": {
-                  backgroundColor: "#388e3c",
-                },
-              }}
-            >
-              {isLoading ? "Đang đăng ký..." : "Đăng ký"}
-            </Button>
-          </StyledForm>
-        </TabPanel>
+        {/* Divider */}
+        <div className="w-full flex items-center my-6">
+          <div className="flex-1 h-[1px] bg-gray-200"></div>
+          <span className="px-4 text-sm text-gray-400 font-medium">Hoặc</span>
+          <div className="flex-1 h-[1px] bg-gray-200"></div>
+        </div>
 
-        <StyledDivider>Hoặc</StyledDivider>
-
-        <Button
-          variant="outlined"
+        {/* Google Sign In */}
+        <button
           onClick={handleGoogleSignIn}
-          fullWidth
-          sx={{ color: "#1976d2" }}
+          className="text-white  hover:text-gray-800 w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-semibold transition-colors"
         >
-          Đăng nhập với Google
-        </Button>
-      </StyledLoginContainer>
-    </StyledContainer>
+          <FontAwesomeIcon icon={faGoogle} />
+          <span>Continue with Google</span>
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -31,81 +31,12 @@ import {
 } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../../config/firebase";
-
-const StyledUserModal = styled(Paper)`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 400px;
-  max-width: 90%;
-  background-color: var(--conversation-bg);
-  color: var(--text-color);
-  border-radius: 8px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  outline: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-
-  @media (max-width: 768px) {
-    width: 90%;
-  }
-`;
-
-const UserAvatarLarge = styled(Avatar)`
-  width: 120px;
-  height: 120px;
-  margin-bottom: 20px;
-  cursor: pointer;
-  border: 3px solid var(--sender-message);
-  transition: all 0.3s ease;
-
-  &:hover {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
-`;
-
-const UserInfoSection = styled.div`
-  width: 100%;
-  margin-bottom: 20px;
-  text-align: center;
-`;
-
-const UserActionSection = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 10px;
-`;
-
-const HiddenFileInput = styled.input`
-  display: none;
-`;
-
-const CropContainer = styled.div`
-  width: 100%;
-  max-height: 400px;
-  overflow: hidden;
-  margin-bottom: 20px;
-`;
-
-const LoadingOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  border-radius: 8px;
-`;
+import {
+  faCamera,
+  faCircleNotch,
+  faExclamationCircle,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface UserProfileModalProps {
   open: boolean;
@@ -116,7 +47,7 @@ interface UserProfileModalProps {
 
 function getCroppedImg(
   image: HTMLImageElement,
-  crop: PixelCrop
+  crop: PixelCrop,
 ): Promise<Blob> {
   const canvas = document.createElement("canvas");
   const scaleX = image.naturalWidth / image.width;
@@ -138,7 +69,7 @@ function getCroppedImg(
     0,
     0,
     crop.width,
-    crop.height
+    crop.height,
   );
 
   return new Promise((resolve, reject) => {
@@ -151,7 +82,7 @@ function getCroppedImg(
         resolve(blob);
       },
       "image/jpeg",
-      0.95
+      0.95,
     );
   });
 }
@@ -159,7 +90,7 @@ function getCroppedImg(
 function centerAspectCrop(
   mediaWidth: number,
   mediaHeight: number,
-  aspect: number
+  aspect: number,
 ) {
   return centerCrop(
     makeAspectCrop(
@@ -169,10 +100,10 @@ function centerAspectCrop(
       },
       aspect,
       mediaWidth,
-      mediaHeight
+      mediaHeight,
     ),
     mediaWidth,
-    mediaHeight
+    mediaHeight,
   );
 }
 
@@ -220,7 +151,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
       const { width, height } = e.currentTarget;
       setCrop(centerAspectCrop(width, height, 1));
     },
-    []
+    [],
   );
 
   const handleCropComplete = (crop: PixelCrop) => {
@@ -277,7 +208,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
           photoURL: cloudinaryUrl,
           lastSeen: serverTimestamp(),
         },
-        { merge: true }
+        { merge: true },
       );
 
       showSnackbar("Cập nhật avatar thành công");
@@ -317,7 +248,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
     try {
       const credential = EmailAuthProvider.credential(
         user.email as string,
-        currentPassword
+        currentPassword,
       );
 
       await reauthenticateWithCredential(user, credential);
@@ -342,143 +273,193 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
-      <StyledUserModal>
-        {isUploading && (
-          <LoadingOverlay>
-            <CircularProgress color="inherit" />
-          </LoadingOverlay>
-        )}
-
-        <div style={{ width: "100%", marginBottom: "20px" }}>
-          <Button
-            variant={activeTab === "profile" ? "contained" : "outlined"}
-            onClick={() => setActiveTab("profile")}
-            style={{ marginRight: "10px" }}
-          >
-            Thông tin cá nhân
-          </Button>
-          <Button
-            variant={activeTab === "password" ? "contained" : "outlined"}
-            onClick={() => setActiveTab("password")}
-          >
-            Đổi mật khẩu
-          </Button>
-        </div>
-
-        {activeTab === "profile" && (
-          <>
-            <UserAvatarLarge
-              src={newAvatarPreview || user?.photoURL || ""}
-              onClick={handleAvatarClick}
-            />
-            <Typography
-              variant="caption"
-              style={{ marginTop: -15, marginBottom: 15 }}
-            >
-              Nhấp vào ảnh để thay đổi
-            </Typography>
-            <HiddenFileInput
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-            />
-
-            <UserInfoSection>
-              <Typography variant="h5" gutterBottom>
-                {user?.displayName}
-              </Typography>
-              <Typography variant="body1" color="textSecondary">
-                {user?.email}
-              </Typography>
-            </UserInfoSection>
-
-            <UserActionSection>
-              {newAvatar && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  onClick={handleUpdateAvatar}
-                  disabled={isUploading}
-                >
-                  {isUploading ? "Đang cập nhật..." : "Cập nhật avatar"}
-                </Button>
-              )}
-              <Button
-                variant="outlined"
-                color="primary"
-                fullWidth
-                onClick={onClose}
-              >
-                Đóng
-              </Button>
-            </UserActionSection>
-          </>
-        )}
-
-        {activeTab === "password" && (
-          <UserActionSection>
-            <TextField
-              label="Mật khẩu hiện tại"
-              type="password"
-              fullWidth
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              margin="normal"
-            />
-            <TextField
-              label="Mật khẩu mới"
-              type="password"
-              fullWidth
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              margin="normal"
-            />
-            <TextField
-              label="Xác nhận mật khẩu mới"
-              type="password"
-              fullWidth
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              margin="normal"
-              error={password !== confirmPassword && confirmPassword !== ""}
-              helperText={
-                password !== confirmPassword && confirmPassword !== ""
-                  ? "Mật khẩu không khớp"
-                  : ""
-              }
-            />
-            {error && (
-              <Typography color="error" variant="body2">
-                {error}
-              </Typography>
+    <>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="relative bg-black/70 rounded-xl shadow-2xl w-full max-w-md overflow-hidden p-6 flex flex-col items-center">
+            {/* Loading Overlay khi đang upload */}
+            {isUploading && (
+              <div className="absolute inset-0 z-10 bg-black/70 flex items-center justify-center">
+                <FontAwesomeIcon
+                  icon={faCircleNotch}
+                  spin
+                  size="2xl"
+                  className="text-[#667eea]-600"
+                />
+              </div>
             )}
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={handleUpdatePassword}
-              disabled={isChangingPassword}
-            >
-              {isChangingPassword ? "Đang cập nhật..." : "Cập nhật mật khẩu"}
-            </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              fullWidth
-              onClick={() => setActiveTab("profile")}
-            >
-              Quay lại
-            </Button>
-          </UserActionSection>
-        )}
 
-        <Dialog open={isCropDialogOpen} onClose={handleCropCancel}>
-          <DialogTitle>Cắt ảnh đại diện</DialogTitle>
-          <DialogContent>
-            <CropContainer>
+            {/* Tabs Menu */}
+            <div className="w-full flex gap-2 mb-6 p-1 bg-[#1a1b1e] rounded-lg">
+              <button
+                onClick={() => setActiveTab("profile")}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-md transition-all duration-200 ${
+                  activeTab === "profile"
+                    ? "bg-[#667eea] text-white shadow-lg"
+                    : "text-gray-400 hover:text-white hover:bg-[#2a2b30]"
+                }`}
+              >
+                Thông tin cá nhân
+              </button>
+              <button
+                onClick={() => setActiveTab("password")}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-md transition-all duration-200 ${
+                  activeTab === "password"
+                    ? "bg-[#667eea] text-white shadow-lg"
+                    : "text-gray-400 hover:text-white hover:bg-[#2a2b30]"
+                }`}
+              >
+                Đổi mật khẩu
+              </button>
+            </div>
+            {/* Content: Profile Tab */}
+            {activeTab === "profile" && (
+              <div className="w-full flex flex-col items-center">
+                {/* Avatar Section */}
+                <div
+                  className="relative group cursor-pointer"
+                  onClick={handleAvatarClick}
+                >
+                  <img
+                    src={
+                      newAvatarPreview ||
+                      user?.photoURL ||
+                      "/default-avatar.png"
+                    }
+                    alt="Avatar"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-gray-100 shadow-lg group-hover:opacity-80 transition-opacity"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <FontAwesomeIcon
+                      icon={faCamera}
+                      className="text-white text-2xl"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-400 mt-2 mb-4 italic">
+                  Nhấp vào ảnh để thay đổi
+                </p>
+
+                <input
+                  type="file"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                />
+
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-200">
+                    {user?.displayName}
+                  </h2>
+                  <p className="text-gray-500">{user?.email}</p>
+                </div>
+
+                <div className="w-full space-y-2">
+                  {newAvatar && (
+                    <button
+                      onClick={handleUpdateAvatar}
+                      disabled={isUploading}
+                      className="w-full bg-[#667eea]-600 hover:bg-[#667eea]-700 text-white font-semibold py-2 rounded-lg transition-colors disabled:bg-[#667eea]-300"
+                    >
+                      {isUploading ? "Đang cập nhật..." : "Cập nhật avatar"}
+                    </button>
+                  )}
+                  <button
+                    onClick={onClose}
+                    className="w-full border border-gray-300 text-gray-300 hover:text-gray-800 font-semibold py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Content: Password Tab */}
+            {activeTab === "password" && (
+              <div className="w-full space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Mật khẩu hiện tại
+                  </label>
+                  <input
+                    type="password"
+                    className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#667eea]-500 outline-none"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Mật khẩu mới
+                  </label>
+                  <input
+                    type="password"
+                    className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#667eea]-500 outline-none"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Xác nhận mật khẩu mới
+                  </label>
+                  <input
+                    type="password"
+                    className={`w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 outline-none ${
+                      password !== confirmPassword && confirmPassword !== ""
+                        ? "border-red-500 focus:ring-red-200"
+                        : "focus:ring-[#667eea]-500"
+                    }`}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  {password !== confirmPassword && confirmPassword !== "" && (
+                    <p className="text-red-500 text-xs mt-1">
+                      Mật khẩu không khớp
+                    </p>
+                  )}
+                </div>
+
+                {error && (
+                  <div className="p-2 bg-red-50 border border-red-200 rounded text-red-600 text-sm flex items-center gap-2">
+                    <FontAwesomeIcon icon={faExclamationCircle} /> {error}
+                  </div>
+                )}
+
+                <div className="pt-2 space-y-2">
+                  <button
+                    onClick={handleUpdatePassword}
+                    disabled={isChangingPassword}
+                    className="w-full bg-[#667eea]-600 hover:bg-[#667eea]-700 text-white font-semibold py-2 rounded-lg transition-colors disabled:bg-[#667eea]-300"
+                  >
+                    {isChangingPassword
+                      ? "Đang cập nhật..."
+                      : "Cập nhật mật khẩu"}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("profile")}
+                    className="w-full text-[#667eea]-600 font-medium py-2 hover:underline"
+                  >
+                    Quay lại
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {isCropDialogOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-[#2a2b30] rounded-lg max-w-lg w-full overflow-hidden shadow-2xl">
+            <div className="px-6 py-4 border-b">
+              <h3 className="text-lg font-bold text-gray-800">
+                Cắt ảnh đại diện
+              </h3>
+            </div>
+
+            <div className="p-4 flex justify-center bg-gray-100 max-h-[60vh] overflow-auto">
               {imageSrc && (
                 <ReactCrop
                   crop={crop}
@@ -491,22 +472,31 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     ref={imgRef}
                     alt="Crop me"
                     src={imageSrc}
-                    style={{ maxWidth: "100%" }}
+                    className="max-w-full"
                     onLoad={onImageLoad}
                   />
                 </ReactCrop>
               )}
-            </CropContainer>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCropCancel}>Hủy</Button>
-            <Button onClick={handleCropConfirm} color="primary">
-              Xác nhận
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </StyledUserModal>
-    </Modal>
+            </div>
+
+            <div className="px-6 py-4 border-t flex justify-end gap-3 bg-gray-50">
+              <button
+                onClick={handleCropCancel}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleCropConfirm}
+                className="px-4 py-2 bg-[#667eea]-600 text-white rounded-md hover:bg-[#667eea]-700 transition-colors shadow-md"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

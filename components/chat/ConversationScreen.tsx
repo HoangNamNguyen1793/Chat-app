@@ -1,7 +1,5 @@
 "use client";
 
-import IconButton from "@mui/material/IconButton";
-import styled from "styled-components";
 import { useRecipient } from "../../hooks/useRecipient";
 import { Conversation, IMessage } from "../../types";
 import {
@@ -16,20 +14,13 @@ import {
   isUserAdmin,
 } from "../../utils/groupUtils";
 import GroupMembersDialog from "../modals/GroupMembersDialog";
-import GroupIcon from "@mui/icons-material/Group";
-import PeopleIcon from "@mui/icons-material/People";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import ImageIcon from "@mui/icons-material/Image";
-import SearchIcon from "@mui/icons-material/Search";
-import CloseIcon from "@mui/icons-material/Close";
+
 import { useRouter } from "next/router";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../config/firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
 import Message from "./Message";
 import { useMemo } from "react";
-
-import SendIcon from "@mui/icons-material/Send";
 
 import {
   KeyboardEventHandler,
@@ -57,158 +48,16 @@ import FileReviewComponent from "../FileReviewComponent";
 import axios from "axios";
 
 import ImageModal from "../modals/ImageModal";
-
-const StyledRecipientHeader = styled.div`
-  position: sticky;
-  background-color: white;
-  z-index: 100;
-  top: 0;
-  display: flex;
-  align-items: center;
-  padding: 11px;
-  height: 80px;
-  border-bottom: 1px solid ${({ theme }) => theme.border};
-`;
-
-const StyledHeaderInfo = styled.div`
-  flex-grow: 1;
-
-  > h3 {
-    margin-top: 0;
-    margin-bottom: 3px;
-  }
-
-  > span {
-    font-size: 14px;
-    color: var(--text-color);
-    opacity: 0.7;
-  }
-`;
-
-const StyledH3 = styled.h3`
-  word-break: break-all;
-`;
-
-const StyledHeaderIcons = styled.div`
-  display: flex;
-`;
-
-const StyledMessageContainer = styled.div`
-  padding: 30px;
-  background-color: #e5ded8;
-  min-height: 80vh;
-`;
-
-const StyledInputContainer = styled.form`
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  position: sticky;
-  bottom: 0;
-  background-color: ${({ theme }) => theme.headerBg};
-  z-index: 100;
-`;
-
-const StyledInput = styled.input`
-  flex-grow: 1;
-  outline: none;
-  border: none;
-  border-radius: 10px;
-  background-color: whitesmoke;
-  padding: 15px;
-  margin-left: 15px;
-  margin-right: 15px;
-`;
-
-const EndOfMessagesForAutoScroll = styled.div`
-  margin-bottom: 30px;
-`;
-
-const InputAndPreviewContainer = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-const SearchContainer = styled.div`
-  position: sticky;
-  top: 80px;
-  left: 0;
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: var(--header-bg);
-  border-bottom: 1px solid var(--border-color);
-  padding: 10px;
-  width: 100%;
-  z-index: 99;
-  overflow-x: auto;
-`;
-
-const SearchHeader = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-`;
-
-const SearchInput = styled.input`
-  flex-grow: 1;
-  outline: none;
-  border: none;
-  border-radius: 8px;
-  background-color: var(--input-bg);
-  padding: 10px 15px;
-  margin: 0 10px;
-  color: var(--text-color);
-  width: calc(100% - 60px);
-`;
-
-const SearchResultsContainer = styled.div`
-  width: 100%;
-  background-color: var(--conversation-bg);
-  border-radius: 8px;
-  max-height: 300px;
-  overflow-y: auto;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 5px;
-
-  &::-webkit-scrollbar {
-    height: 4px;
-    width: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 4px;
-  }
-`;
-
-const SearchResultItem = styled.div`
-  padding: 10px 15px;
-  border-bottom: 1px solid var(--border-color);
-  cursor: pointer;
-
-  &:hover {
-    background-color: var(--filePreviewBg, #444444);
-  }
-
-  > p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--text-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  > span {
-    font-size: 12px;
-    color: var(--filePreviewSubtext, #aaaaaa);
-    display: block;
-  }
-`;
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faImage,
+  faMagnifyingGlass,
+  faPaperclip,
+  faPaperPlane,
+  faUserGroup,
+  faUsers,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 const ConversationScreen = ({
   conversation,
@@ -256,7 +105,7 @@ const ConversationScreen = ({
   const conversationId = router.query.id as string | undefined;
   const queryGetMessages = useMemo(
     () => (conversationId ? generateQueryGetMessages(conversationId) : null),
-    [conversationId]
+    [conversationId],
   );
   const [messagesSnapshot, messagesLoading, __error] =
     useCollection(queryGetMessages);
@@ -270,7 +119,7 @@ const ConversationScreen = ({
       .filter(
         (m) =>
           typeof m.text === "string" &&
-          m.text.toLowerCase().includes(searchQuery.toLowerCase())
+          m.text.toLowerCase().includes(searchQuery.toLowerCase()),
       );
 
     setSearchResults(results);
@@ -305,19 +154,19 @@ const ConversationScreen = ({
 
       if (selectedFiles.length + newFiles.length > MAX_FILES) {
         alert(
-          `Bạn chỉ có thể tải lên tối đa ${MAX_FILES} tệp cùng lúc. Hiện tại bạn đã chọn ${selectedFiles.length} tệp.`
+          `Bạn chỉ có thể tải lên tối đa ${MAX_FILES} tệp cùng lúc. Hiện tại bạn đã chọn ${selectedFiles.length} tệp.`,
         );
         return;
       }
 
       const oversizedFiles = newFiles.filter(
-        (file) => file.size > MAX_FILE_SIZE
+        (file) => file.size > MAX_FILE_SIZE,
       );
       if (oversizedFiles.length > 0) {
         alert(
           `Các tệp sau vượt quá giới hạn 10MB: ${oversizedFiles
             .map((f) => `${f.name} (${(f.size / (1024 * 1024)).toFixed(2)}MB)`)
-            .join(", ")}`
+            .join(", ")}`,
         );
         return;
       }
@@ -434,7 +283,7 @@ const ConversationScreen = ({
           onUploadProgress: (progressEvent: any) => {
             if (progressEvent.total) {
               const progress = Math.round(
-                (progressEvent.loaded / progressEvent.total) * 100
+                (progressEvent.loaded / progressEvent.total) * 100,
               );
               setUploadProgress((prev) => ({
                 ...prev,
@@ -461,7 +310,7 @@ const ConversationScreen = ({
           collection(db, "messages"),
           where("conversation_id", "==", conversationId),
           where("user", "!=", loggedInUser.email),
-          where("isRead", "==", false)
+          where("isRead", "==", false),
         );
 
         const unreadMessagesSnapshot = await getDocs(unreadMessagesQuery);
@@ -472,7 +321,7 @@ const ConversationScreen = ({
               isRead: true,
               readAt: serverTimestamp(),
             });
-          }
+          },
         );
 
         await Promise.all(updatePromises);
@@ -505,7 +354,7 @@ const ConversationScreen = ({
       await setDoc(
         doc(db, "users", loggedInUser?.email as string),
         { lastSeen: serverTimestamp() },
-        { merge: true }
+        { merge: true },
       );
 
       if (fileUrls.length > 0) {
@@ -541,7 +390,7 @@ const ConversationScreen = ({
   };
 
   const sendMessageOnEnter: KeyboardEventHandler<HTMLInputElement> = (
-    event
+    event,
   ) => {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -573,140 +422,138 @@ const ConversationScreen = ({
 
   return (
     <>
-      <StyledRecipientHeader>
+      <header className="flex items-center p-4 bg-[#1e1f22] backdrop-blur-lg border-b border-white/10 sticky top-0 z-10">
         {isGroup ? (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "50px",
-              height: "50px",
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              marginRight: "12px",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-              transition: "all 0.3s ease",
-            }}
-          >
-            <GroupIcon style={{ color: "white", fontSize: "24px" }} />
+          /* Avatar cho Group */
+          <div className="flex items-center justify-center w-[50px] h-[50px] rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] mr-3 shadow-md transition-all duration-300 hover:scale-105">
+            <FontAwesomeIcon icon={faUsers} className="text-white text-xl" />
           </div>
         ) : (
-          <RecipientAvatar
-            recipient={recipient}
-            recipientEmail={recipientEmail}
-            recipientName={recipientName}
-            size="large"
-            showOnlineStatus={true}
-          />
+          /* Avatar cho Cá nhân - Giữ component RecipientAvatar nhưng có thể bọc ngoài nếu cần */
+          <div className="mr-3">
+            <RecipientAvatar
+              recipient={recipient}
+              recipientEmail={recipientEmail}
+              recipientName={recipientName}
+              size="large"
+              showOnlineStatus={true}
+            />
+          </div>
         )}
 
-        <StyledHeaderInfo>
-          <StyledH3>{displayName}</StyledH3>
-          {isGroup ? (
-            <span>
-              {conversation.users?.length || 0} members
-              {conversation.groupDescription && (
-                <span> • {conversation.groupDescription}</span>
-              )}
-            </span>
-          ) : (
-            recipient && (
-              <span>
-                Last active:{" "}
-                {convertFirestoreTimestampToString(recipient.lastSeen)}
-              </span>
-            )
-          )}
-        </StyledHeaderInfo>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg font-semibold text-gray-300 truncate m-0">
+            {displayName}
+          </h3>
 
-        <StyledHeaderIcons>
-          <IconButton onClick={() => setIsSearchOpen(!isSearchOpen)}>
-            <SearchIcon />
-          </IconButton>
+          <div className="text-xs text-gray-400 flex items-center gap-1 truncate">
+            {isGroup ? (
+              <>
+                <span>{conversation.users?.length || 0} members</span>
+                {conversation.groupDescription && (
+                  <span className="flex items-center">
+                    <span className="mx-1">•</span>
+                    <span className="truncate">
+                      {conversation.groupDescription}
+                    </span>
+                  </span>
+                )}
+              </>
+            ) : (
+              recipient && (
+                <span>
+                  Last active:{" "}
+                  {convertFirestoreTimestampToString(recipient.lastSeen)}
+                </span>
+              )
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 ml-4">
+          {/* Nút Search */}
+          <button
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-full transition-colors"
+          >
+            <FontAwesomeIcon icon={faMagnifyingGlass} className="text-lg" />
+          </button>
+
+          {/* Nút Xem thành viên nhóm */}
           {isGroup && (
-            <IconButton onClick={() => setIsGroupMembersOpen(true)}>
-              <PeopleIcon />
-            </IconButton>
+            <button
+              onClick={() => setIsGroupMembersOpen(true)}
+              className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-full transition-colors"
+            >
+              <FontAwesomeIcon icon={faUserGroup} className="text-lg" />
+            </button>
           )}
-          <IconButton onClick={toggleImageSidebar}>
-            <ImageIcon />
-          </IconButton>
-        </StyledHeaderIcons>
-      </StyledRecipientHeader>
+
+          {/* Nút Ảnh/Media */}
+          <button
+            onClick={toggleImageSidebar}
+            className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-full transition-colors"
+          >
+            <FontAwesomeIcon icon={faImage} className="text-lg" />
+          </button>
+        </div>
+      </header>
 
       {isSearchOpen && (
-        <SearchContainer>
-          <SearchHeader></SearchHeader>
-          <div style={{ display: "flex", width: "100%", alignItems: "center" }}>
-            <SearchIcon
-              style={{ color: "var(--text-color)", marginLeft: "5px" }}
+        <div className="absolute top-0 left-0 w-full z-20 bg-[#1e1f22]/95 backdrop-blur-md border-b border-white/10 shadow-lg transition-all animate-in fade-in slide-in-from-top-2 duration-200">
+          {/* Search Input Area */}
+          <div className="flex items-center w-full px-4 py-3 gap-3">
+            <FontAwesomeIcon
+              icon={faMagnifyingGlass}
+              className="text-gray-400 text-sm"
             />
-            <SearchInput
+
+            <input
+              type="text"
               placeholder="Nhập từ khóa tìm kiếm..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus
+              className="flex-1 bg-[#2a2b30] border-none outline-none text-white text-sm placeholder-gray-500"
             />
-            <IconButton
+
+            <button
               onClick={() => setIsSearchOpen(false)}
-              style={{
-                padding: "4px",
-                backgroundColor: "var(--input-bg)",
-              }}
+              className="p-1.5 hover:bg-[#2a2b30]/10 rounded-md text-gray-400 hover:text-white transition-colors"
             >
-              <CloseIcon fontSize="small" />
-            </IconButton>
+              <FontAwesomeIcon icon={faXmark} className="text-lg" />
+            </button>
           </div>
 
+          {/* Search Results Dropdown */}
           {searchResults.length > 0 && (
-            <SearchResultsContainer>
+            <div className="max-h-[300px] overflow-y-auto border-t border-white/5 bg-[#1e1f22]">
               {searchResults.map((result) => (
-                <SearchResultItem
+                <div
                   key={result.id}
                   onClick={() => scrollToMessage(result.id)}
+                  className="px-4 py-3 border-b border-white/5 cursor-pointer hover:bg-[#2a2b30]/5 transition-colors group"
                 >
-                  <p>
+                  <p className="text-sm text-gray-300 group-hover:text-white truncate">
                     {result.text.length > 50
                       ? result.text.substring(0, 50) + "..."
                       : result.text}
                   </p>
-                  <span>{result.sent_at}</span>
-                </SearchResultItem>
+                  <span className="text-[10px] text-gray-500 mt-1 block uppercase tracking-wider">
+                    {result.sent_at}
+                  </span>
+                </div>
               ))}
-            </SearchResultsContainer>
+            </div>
           )}
-        </SearchContainer>
+        </div>
       )}
-
-      <StyledMessageContainer>
+      <div className="bg-[#1e1f22] flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {showMessages()}
 
-        <EndOfMessagesForAutoScroll ref={endOfMessagesRef} />
-      </StyledMessageContainer>
-
-      <style jsx global>{`
-        .highlight-message {
-          background-color: rgba(255, 235, 59, 0.3) !important;
-          border-left: 4px solid #ffeb3b;
-          padding-left: 8px;
-          transition: all 0.3s ease;
-          animation: highlight-pulse 2s ease-in-out;
-        }
-
-        @keyframes highlight-pulse {
-          0% {
-            background-color: rgba(255, 235, 59, 0.5);
-          }
-          50% {
-            background-color: rgba(255, 235, 59, 0.3);
-          }
-          100% {
-            background-color: rgba(255, 235, 59, 0.1);
-          }
-        }
-      `}</style>
-
+        {/* Phần tử dùng để auto-scroll */}
+        <div ref={endOfMessagesRef} className="h-1 w-full" />
+      </div>
       <FileReviewComponent
         selectedFiles={selectedFiles}
         filePreviews={filePreviews}
@@ -716,38 +563,59 @@ const ConversationScreen = ({
         removeFile={removeFile}
       />
 
-      <StyledInputContainer>
+      <div className="flex items-center gap-2 p-3 bg-[#2b2d31] border border-white/5 shadow-inner">
+        {/* Emoji Picker */}
         <EmojiPickerComponent onSelect={handleEmojiSelect} />
-        <StyledInput
+
+        {/* Input chính */}
+        <input
           value={newMessage}
           onChange={(event) => setNewMessage(event.target.value)}
           onKeyDown={sendMessageOnEnter}
+          placeholder="Nhập tin nhắn..."
+          className="flex-1 bg-[#1e1f22] border-none outline-none rounded-xl text-gray-200 placeholder-gray-500 text-sm py-1.5 "
         />
-        <IconButton
-          onClick={sendMessageOnClick}
-          disabled={(!newMessage && selectedFiles.length === 0) || isUploading}
-        >
-          <SendIcon />
-        </IconButton>
-        <IconButton
-          onClick={() => {
-            console.log("Attach file button clicked");
-            const fileInput = document.getElementById(
-              "fileInput"
-            ) as HTMLInputElement;
-            fileInput?.click();
-          }}
-          disabled={isUploading}
-        >
-          <AttachFileIcon />
-        </IconButton>
+
+        <div className="flex items-center gap-1">
+          {/* Nút Gửi */}
+          <button
+            onClick={sendMessageOnClick}
+            disabled={
+              (!newMessage && selectedFiles.length === 0) || isUploading
+            }
+            className={`
+        p-2 rounded-lg transition-all duration-200
+        ${
+          (!newMessage && selectedFiles.length === 0) || isUploading
+            ? "text-gray-400 cursor-not-allowed opacity-50"
+            : "text-[#667eea] hover:bg-[#667eea]/10 hover:scale-110 active:scale-95"
+        }
+      `}
+          >
+            <FontAwesomeIcon icon={faPaperPlane} className="text-lg" />
+          </button>
+
+          {/* Nút Đính kèm */}
+          <button
+            onClick={() => {
+              const fileInput = document.getElementById("fileInput");
+              fileInput?.click();
+            }}
+            disabled={isUploading}
+            className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <FontAwesomeIcon icon={faPaperclip} className="text-lg" />
+          </button>
+        </div>
+
+        {/* Input file ẩn */}
         <input
           type="file"
           id="fileInput"
-          style={{ display: "none" }}
+          className="hidden"
           onChange={handleFileChange}
         />
-      </StyledInputContainer>
+      </div>
 
       <ImageModal
         imageUrl={selectedImage}

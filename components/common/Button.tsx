@@ -1,97 +1,6 @@
 "use client";
 
-import { IconButton as MuiIconButton } from "@mui/material";
-import styled from "styled-components";
 import { ReactNode, memo } from "react";
-
-interface StyledButtonProps {
-  $variant?: "primary" | "secondary" | "outline" | "text";
-  $size?: "small" | "medium" | "large";
-  $fullWidth?: boolean;
-}
-
-const StyledButton = styled.button<StyledButtonProps>`
-  border: none;
-  border-radius: 8px;
-  text-transform: none;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  font-family: inherit;
-
-  ${({ $variant }) => {
-    switch ($variant) {
-      case "primary":
-        return `
-          background-color: #25d366;
-          color: white;
-          &:hover {
-            background-color: #1fa855;
-          }
-        `;
-      case "secondary":
-        return `
-          background-color: #f0f0f0;
-          color: #333;
-          &:hover {
-            background-color: #e0e0e0;
-          }
-        `;
-      case "outline":
-        return `
-          border: 1px solid #25d366;
-          color: #25d366;
-          background-color: transparent;
-          &:hover {
-            background-color: rgba(37, 211, 102, 0.1);
-          }
-        `;
-      default:
-        return `
-          background-color: transparent;
-          color: #555;
-          &:hover {
-            background-color: rgba(0, 0, 0, 0.04);
-          }
-        `;
-    }
-  }}
-
-  ${({ $size }) => {
-    switch ($size) {
-      case "small":
-        return `
-          padding: 6px 12px;
-          font-size: 12px;
-        `;
-      case "large":
-        return `
-          padding: 12px 24px;
-          font-size: 16px;
-        `;
-      default:
-        return `
-          padding: 8px 16px;
-          font-size: 14px;
-        `;
-    }
-  }}
-  
-  ${({ $fullWidth }) => $fullWidth && `width: 100%;`}
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const StyledIconButton = styled(MuiIconButton)`
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-`;
 
 interface ButtonProps {
   children: ReactNode;
@@ -121,19 +30,41 @@ export const Button = memo(
     disabled = false,
     type = "button",
   }: ButtonProps) => {
+    // Định nghĩa style cho từng variant
+    const variants = {
+      text: "bg-transparent hover:bg-[#2a2b30]/10 text-gray-300",
+      primary:
+        "bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white shadow-md hover:brightness-110",
+      secondary:
+        "bg-transparent border border-[#667eea]/50 text-[#667eea] hover:bg-[#667eea]/10",
+      outline:
+        "bg-transparent border border-[#667eea]/50 text-[#667eea] hover:bg-[#667eea]/10",
+    };
+
+    // Định nghĩa style cho từng size
+    const sizes = {
+      small: "px-3 py-1.5 text-xs",
+      medium: "px-4 py-2 text-sm",
+      large: "px-6 py-3 text-base",
+    };
+
     return (
-      <StyledButton
-        onClick={onClick}
-        $variant={variant}
-        $size={size}
-        $fullWidth={fullWidth}
-        disabled={disabled}
+      <button
         type={type}
+        onClick={onClick}
+        disabled={disabled}
+        className={`
+        inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 active:scale-95
+        disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
+        ${fullWidth ? "w-full" : "w-auto"}
+        ${variants[variant] || variants.text}
+        ${sizes[size] || sizes.medium}
+      `}
       >
         {children}
-      </StyledButton>
+      </button>
     );
-  }
+  },
 );
 
 export const IconButton = memo(
@@ -144,17 +75,29 @@ export const IconButton = memo(
     size = "medium",
     style,
   }: IconButtonProps) => {
+    // Mapping size cho IconButton (thường là hình vuông/tròn)
+    const iconSizes = {
+      small: "w-8 h-8 text-sm",
+      medium: "w-10 h-10 text-lg",
+      large: "w-12 h-12 text-xl",
+    };
+
     return (
-      <StyledIconButton
+      <button
         onClick={onClick}
         disabled={disabled}
-        size={size}
-        style={style}
+        style={style} // Giữ lại để hỗ trợ các inline-style đặc biệt từ file cũ
+        className={`
+        flex items-center justify-center rounded-full transition-all duration-200
+        text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 active:scale-90
+        disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100
+        ${iconSizes[size] || iconSizes.medium}
+      `}
       >
         {children}
-      </StyledIconButton>
+      </button>
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

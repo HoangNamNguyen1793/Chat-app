@@ -4,111 +4,14 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import Image from "next/image";
-
-const StyledFilePreviewContainer = styled.div`
-  position: sticky;
-  bottom: 70px;
-  left: 0;
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: var(--header-bg);
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  margin: 0 auto;
-  padding: 10px;
-  width: 100%;
-  z-index: 101;
-  overflow-x: auto;
-  border-top: 1px solid var(--border-color);
-`;
-
-const StyledMultiFileContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  max-width: 100%;
-  padding: 5px;
-  scrollbar-width: thin;
-  justify-content: flex-start;
-  width: 100%;
-
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 4px;
-  }
-`;
-
-const StyledFilePreview = styled.div`
-  padding: 8px;
-  background-color: var(--filePreviewBg, #444444);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 100px;
-  max-width: 120px;
-  position: relative;
-  border: 1px solid var(--filePreviewBorder, #555555);
-`;
-
-const StyledFileInfo = styled.div`
-  width: 100%;
-  margin-top: 5px;
-  overflow: hidden;
-  text-align: center;
-
-  > p {
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 12px;
-    color: var(--filePreviewText, #ffffff);
-  }
-
-  > span {
-    font-size: 10px;
-    color: var(--filePreviewSubtext, #aaaaaa);
-    display: block;
-  }
-`;
-
-const StyledCloseButton = styled(IconButton)`
-  padding: 2px !important;
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background-color: #e53935 !important;
-  color: white;
-  width: 20px;
-  height: 20px;
-
-  &:hover {
-    background-color: #c62828 !important;
-  }
-`;
-
-const StyledProgressContainer = styled.div`
-  width: 100%;
-  height: 4px;
-  background-color: var(--border-color, #333333);
-  border-radius: 2px;
-  margin-top: 4px;
-  overflow: hidden;
-`;
-
-const StyledProgressBar = styled.div<{ progress: number }>`
-  height: 100%;
-  width: ${(props) => props.progress}%;
-  background-color: #25d366;
-  transition: width 0.3s ease;
-`;
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFileAlt,
+  faFileExcel,
+  faFilePdf,
+  faFileWord,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface FileReviewProps {
   selectedFiles: File[];
@@ -118,6 +21,15 @@ interface FileReviewProps {
   clearSelectedFiles: () => void;
   removeFile: (index: number) => void;
 }
+
+const getFileIconProps = (type: any) => {
+  if (type.includes("pdf")) return { icon: faFilePdf, color: "text-red-500" };
+  if (type.includes("word") || type.includes("doc"))
+    return { icon: faFileWord, color: "text-[#667eea]-600" };
+  if (type.includes("excel") || type.includes("sheet"))
+    return { icon: faFileExcel, color: "text-[#667eea]-600" };
+  return { icon: faFileAlt, color: "text-gray-400" };
+};
 
 const FileReviewComponent: React.FC<FileReviewProps> = ({
   selectedFiles,
@@ -130,80 +42,87 @@ const FileReviewComponent: React.FC<FileReviewProps> = ({
   if (selectedFiles.length === 0) return null;
 
   return (
-    <StyledFilePreviewContainer>
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "10px",
-        }}
-      >
-        <span style={{ color: "var(--text-color)", fontSize: "14px" }}>
+    <div className="w-full p-4 bg-gray-50 border-t border-gray-200">
+      {/* Header: Số lượng tệp & Xóa tất cả */}
+      <div className="flex justify-between items-center mb-3">
+        <span className="text-sm font-medium text-gray-600">
           {selectedFiles.length} tệp đã chọn
         </span>
         {selectedFiles.length > 1 && (
-          <IconButton
+          <button
             onClick={clearSelectedFiles}
-            style={{
-              padding: "4px",
-              backgroundColor: "var(--input-bg)",
-            }}
+            className="p-1.5 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+            title="Xóa tất cả"
           >
-            <CloseIcon fontSize="small" />
-          </IconButton>
+            <FontAwesomeIcon icon={faTimes} className="text-xs block" />
+          </button>
         )}
       </div>
-      <StyledMultiFileContainer>
-        {filePreviews.map((item, index) => (
-          <StyledFilePreview key={index}>
-            {item.preview !== "non-image" &&
-            item.file.type.startsWith("image/") ? (
-              <Image
-                src={item.preview}
-                alt="Preview"
-                height={60}
-                width={60}
-                style={{ objectFit: "cover", borderRadius: "4px" }}
-                onError={(e) => {
-                  console.error("Preview image load error:", e);
-                }}
-              />
-            ) : (
-              <AttachFileIcon
-                style={{
-                  color: item.file.type.includes("pdf")
-                    ? "#f40f02"
-                    : item.file.type.includes("word") ||
-                      item.file.type.includes("doc")
-                    ? "#2b579a"
-                    : item.file.type.includes("excel") ||
-                      item.file.type.includes("sheet")
-                    ? "#217346"
-                    : "var(--filePreviewText, #ffffff)",
-                  fontSize: "36px",
-                }}
-              />
-            )}
-            <StyledFileInfo>
-              <p>{item.file.name}</p>
-              <span>{(item.file.size / 1024).toFixed(1)} KB</span>
-              {isUploading && uploadProgress[item.file.name] !== undefined && (
-                <StyledProgressContainer>
-                  <StyledProgressBar
-                    progress={uploadProgress[item.file.name]}
+
+      {/* Danh sách file preview */}
+      <div className="flex flex-wrap gap-3 max-h-64 overflow-y-auto">
+        {filePreviews.map((item, index) => {
+          const isImage =
+            item.preview !== "non-image" && item.file.type.startsWith("image/");
+          const fileIcon = getFileIconProps(item.file.type);
+
+          return (
+            <div
+              key={index}
+              className="relative flex items-center gap-3 p-2 bg-[#2a2b30] border border-gray-200 rounded-lg min-w-[200px] max-w-[250px] shadow-sm group"
+            >
+              {/* Ảnh preview hoặc Icon file */}
+              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-50 rounded overflow-hidden">
+                {isImage ? (
+                  <img
+                    src={item.preview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
                   />
-                </StyledProgressContainer>
-              )}
-            </StyledFileInfo>
-            <StyledCloseButton size="small" onClick={() => removeFile(index)}>
-              <CloseIcon fontSize="small" />
-            </StyledCloseButton>
-          </StyledFilePreview>
-        ))}
-      </StyledMultiFileContainer>
-    </StyledFilePreviewContainer>
+                ) : (
+                  <FontAwesomeIcon
+                    icon={fileIcon.icon}
+                    className={`text-3xl ${fileIcon.color}`}
+                  />
+                )}
+              </div>
+
+              {/* Thông tin file */}
+              <div className="flex-1 min-w-0 pr-6">
+                <p
+                  className="text-sm font-medium text-gray-800 truncate"
+                  title={item.file.name}
+                >
+                  {item.file.name}
+                </p>
+                <span className="text-[11px] text-gray-500 italic">
+                  {(item.file.size / 1024).toFixed(1)} KB
+                </span>
+
+                {/* Progress Bar khi đang upload */}
+                {isUploading &&
+                  uploadProgress[item.file.name] !== undefined && (
+                    <div className="w-full h-1 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                      <div
+                        className="h-full bg-[#667eea]-500 transition-all duration-300"
+                        style={{ width: `${uploadProgress[item.file.name]}%` }}
+                      />
+                    </div>
+                  )}
+              </div>
+
+              {/* Nút xóa từng file */}
+              <button
+                onClick={() => removeFile(index)}
+                className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+              >
+                <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 };
 

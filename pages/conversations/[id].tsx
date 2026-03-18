@@ -19,23 +19,6 @@ interface Props {
   messages: IMessage[];
 }
 
-const StyledContainer = styled.div`
-  display: flex;
-`;
-
-const StyledConversationContainer = styled.div`
-  flex-grow: 1;
-  overflow: scroll;
-  height: 100vh;
-
-  ::-webkit-scrollbar {
-    display: none;
-  }
-
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-`;
-
 const Conversation = ({ conversation, messages }: Props) => {
   const [loggedInUser, _loading, _error] = useAuthState(auth);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -45,20 +28,44 @@ const Conversation = ({ conversation, messages }: Props) => {
   };
 
   return (
-    <StyledContainer>
+    <div className="flex h-screen overflow-hidden bg-gray-50">
       <Head>
         <title>
-          Conversation with{" "}
-          {getRecipientEmail(conversation.users, loggedInUser)}
+          Chat với {getRecipientEmail(conversation.users, loggedInUser)}
         </title>
       </Head>
 
-      <Sidebar isOpen={isSidebarOpen} onToggle={handleSidebarToggle} />
+      {/* Sidebar Wrapper */}
+      {/* Sử dụng z-index cao và transition để Sidebar trượt ra trên Mobile. 
+      Trên Desktop (md trở lên), nó sẽ chiếm một phần cố định của màn hình.
+  */}
+      <aside
+        className={`
+      fixed inset-y-0 left-0 z-40 w-80   transition-transform duration-300 ease-in-out transform
+      md:relative md:translate-x-0 
+      ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+    `}
+      >
+        <Sidebar isOpen={isSidebarOpen} onToggle={handleSidebarToggle} />
+      </aside>
 
-      <StyledConversationContainer>
-        <ConversationScreen conversation={conversation} messages={messages} />
-      </StyledConversationContainer>
-    </StyledContainer>
+      {/* Overlay cho Mobile khi Sidebar đang mở */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/[#667eea] backdrop-blur-sm md:hidden"
+          onClick={handleSidebarToggle}
+        />
+      )}
+
+      {/* Main Conversation Content */}
+      <main className="flex-1 flex flex-col min-w-0 h-full relative">
+        <ConversationScreen
+          conversation={conversation}
+          messages={messages}
+          // Bạn có thể truyền thêm hàm toggle Sidebar vào đây để hiện nút Menu trên Mobile
+        />
+      </main>
+    </div>
   );
 };
 

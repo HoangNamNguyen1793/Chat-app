@@ -20,292 +20,17 @@ import DoneIcon from "@mui/icons-material/Done";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import { getReadReceiptStatus } from "../../utils/readReceipts";
 import { serverTimestamp } from "firebase/firestore";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCheck,
+  faCheckDouble,
+  faPaperclip,
+  faTrashCan,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface SystemMessageProps {
   isSystemMessage: boolean;
 }
-
-const SystemMessageContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 16px 20px;
-  padding: 8px 16px;
-`;
-
-const SystemMessageBubble = styled.div`
-  background-color: rgba(139, 92, 246, 0.1);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 13px;
-  color: #8b5cf6;
-  text-align: center;
-  max-width: 70%;
-  font-weight: 500;
-`;
-
-interface MessageContainerProps {
-  isOwnMessage: boolean;
-}
-
-const MessageContainer = styled.div<MessageContainerProps>`
-  display: flex;
-  align-items: center;
-  margin: 12px 20px;
-  width: 100%;
-  animation: fadeInUp 0.3s ease-out;
-  position: relative;
-  gap: 8px;
-
-  /* Ensure proper alignment */
-  ${({ isOwnMessage }) =>
-    isOwnMessage
-      ? `
-    flex-direction: row-reverse;
-    justify-content: flex-start;
-    margin-left: auto;
-    margin-right: 20px;
-  `
-      : `
-    flex-direction: row;
-    justify-content: flex-start;
-    margin-left: 20px;
-    margin-right: auto;
-  `}
-
-  &:hover .message-actions {
-    opacity: 1;
-    align-items: center;
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
-
-const MessageBubble = styled.div<MessageContainerProps>`
-  max-width: 75%;
-  min-width: 180px;
-  padding: 16px 20px 32px;
-  border-radius: 20px;
-  position: relative;
-  word-wrap: break-word;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  flex-shrink: 0;
-
-  /* Clear any existing float or margin that might interfere */
-  float: none;
-
-  ${({ isOwnMessage }) =>
-    isOwnMessage
-      ? `
-    /* User messages - RIGHT side */
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-bottom-right-radius: 6px;
-    margin-left: auto;
-    margin-right: 0;
-    box-shadow: 0 4px 20px rgba(103, 126, 234, 0.3);
-    
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(103, 126, 234, 0.4);
-    }
-  `
-      : `
-    /* Other messages - LEFT side */
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    color: #333;
-    border-bottom-left-radius: 6px;
-    margin-left: 0;
-    margin-right: auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-      background: rgba(255, 255, 255, 0.98);
-    }
-  `}
-
-  @media (max-width: 768px) {
-    max-width: 85%;
-    padding: 14px 18px 22px;
-  }
-`;
-
-const MessageText = styled.p`
-  margin: 0 0 8px 0;
-  font-size: 15px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  font-weight: 400;
-  letter-spacing: 0.3px;
-  padding-right: 20px;
-`;
-
-const MessageTimestamp = styled.span<MessageContainerProps>`
-  position: absolute;
-  bottom: 8px;
-  right: 16px;
-  font-size: 11px;
-  user-select: none;
-  font-weight: 500;
-  opacity: 0.7;
-  transition: opacity 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-  min-width: fit-content;
-
-  ${({ isOwnMessage }) =>
-    isOwnMessage
-      ? `
-    color: rgba(255, 255, 255, 0.8);
-  `
-      : `
-    color: #8B5CF6;
-  `}
-
-  .message-bubble:hover & {
-    opacity: 1;
-  }
-`;
-
-const ReadReceiptIcon = styled.div<{ isRead: boolean; isFullyRead: boolean }>`
-  display: flex;
-  align-items: center;
-  margin-left: 4px;
-
-  .MuiSvgIcon-root {
-    font-size: 14px;
-    color: ${({ isRead, isFullyRead }) => {
-      if (isRead) return "rgba(255, 255, 255, 0.8)";
-      return "rgba(255, 255, 255, 0.4)";
-    }};
-    transition: color 0.3s ease;
-  }
-`;
-
-const MessageMedia = styled.div`
-  margin-bottom: 16px;
-  border-radius: 12px;
-  overflow: hidden;
-  max-width: 320px;
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: scale(1.02);
-  }
-`;
-
-const MediaImage = styled.img`
-  width: 100%;
-  height: auto;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 12px;
-  object-fit: cover;
-
-  &:hover {
-    opacity: 0.95;
-    transform: scale(1.05);
-  }
-`;
-
-const FileAttachment = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background: rgba(103, 126, 234, 0.1);
-  border: 1px solid rgba(103, 126, 234, 0.2);
-  border-radius: 12px;
-  text-decoration: none;
-  color: #667eea;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-
-  &:hover {
-    background: rgba(103, 126, 234, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(103, 126, 234, 0.3);
-  }
-`;
-
-const FileIcon = styled.span`
-  margin-right: 12px;
-  font-size: 18px;
-  filter: grayscale(0%);
-`;
-
-const FileName = styled.span`
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-`;
-
-const MessageActions = styled.div<MessageContainerProps>`
-  position: absolute;
-  display: flex;
-  flex-direction: row;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  gap: 4px;
-  z-index: 10;
-  flex-shrink: 0;
-  align-items: center;
-  ${({ isOwnMessage }) =>
-    isOwnMessage
-      ? `
-    top: 8px;
-    right: 8px;
-  `
-      : `
-    top: 8px;
-    right: 8px;
-  `}
-
-  .MuiIconButton-root {
-    padding: 6px;
-    width: 32px;
-    height: 32px;
-    background-color: rgba(255, 255, 255, 0.95);
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 1);
-      transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .MuiSvgIcon-root {
-      font-size: 16px;
-      color: #666;
-    }
-  }
-`;
-
-const DeletedMessageText = styled.span`
-  color: #999;
-  font-style: italic;
-  font-size: 14px;
-  opacity: 0.7;
-`;
 
 interface MessageProps {
   message: IMessage;
@@ -343,7 +68,7 @@ const Message = memo(
       if (message.fileUrl && onImageClick) {
         console.log(
           "Image clicked, calling onImageClick with:",
-          message.fileUrl
+          message.fileUrl,
         );
         onImageClick(message.fileUrl);
       }
@@ -399,96 +124,144 @@ const Message = memo(
 
     if (isSystemMessage) {
       return (
-        <SystemMessageContainer>
-          <SystemMessageBubble>{message.text}</SystemMessageBubble>
-        </SystemMessageContainer>
+        /* Container căn giữa toàn bộ dòng thông báo */
+        <div className="flex justify-center w-full my-6 px-4">
+          {/* Bong bóng tin nhắn hệ thống: mờ, chữ nhỏ, bo góc nhẹ */}
+          <div
+            className="
+        bg-[#2a2b30]/5 
+        backdrop-blur-sm 
+        px-4 py-1.5 
+        rounded-full 
+        border border-white/10 
+        text-[12px] 
+        text-gray-400 
+        italic 
+        tracking-wide 
+        shadow-sm
+      "
+          >
+            {message.text}
+          </div>
+        </div>
       );
     }
 
     return (
       <>
-        <MessageContainer isOwnMessage={isOwnMessage}>
-          <MessageBubble className="message-bubble" isOwnMessage={isOwnMessage}>
-            {/* File/Image attachment */}
+        <div
+          className={`flex w-full mb-4 ${isOwnMessage ? "justify-end" : "justify-start"}`}
+        >
+          <div
+            className={`
+      relative group max-w-[70%] px-3 py-2 rounded-2xl transition-all duration-200
+      ${
+        isOwnMessage
+          ? "bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white rounded-tr-none shadow-lg"
+          : "bg-[#2b2d31] text-gray-200 rounded-tl-none border border-white/5"
+      }
+    `}
+          >
+            {/* 1. File/Image Attachment */}
             {message.fileUrl && !isDeleted && (
-              <>
+              <div className="mb-2 overflow-hidden rounded-lg">
                 {isImageFile(message.fileUrl) ? (
-                  <MessageMedia>
-                    <MediaImage
-                      src={message.fileUrl}
-                      alt="Shared image"
-                      onClick={handleImageClick}
-                    />
-                  </MessageMedia>
+                  <img
+                    src={message.fileUrl}
+                    alt="Shared"
+                    onClick={handleImageClick}
+                    className="max-w-full h-auto cursor-pointer hover:brightness-90 transition-all"
+                  />
                 ) : (
-                  <FileAttachment
+                  <div
                     onClick={() =>
                       handleFileDownload(
                         message.fileUrl!,
-                        getFileName(message.fileUrl!)
+                        getFileName(message.fileUrl!),
                       )
                     }
+                    className="flex items-center gap-3 p-3 bg-black/20 rounded-lg cursor-pointer hover:bg-black/30 transition-colors"
                   >
-                    <FileIcon>📎</FileIcon>
-                    <FileName>{getFileName(message.fileUrl!)}</FileName>
-                  </FileAttachment>
+                    <FontAwesomeIcon
+                      icon={faPaperclip}
+                      className="text-gray-300"
+                    />
+                    <span className="text-sm truncate max-w-[150px]">
+                      {getFileName(message.fileUrl)}
+                    </span>
+                  </div>
                 )}
-              </>
+              </div>
             )}
 
-            {/* Message text */}
-            {isDeleted ? (
-              <DeletedMessageText>
-                🗑️ This message was deleted
-              </DeletedMessageText>
-            ) : (
-              message.text && <MessageText>{message.text}</MessageText>
-            )}
+            {/* 2. Message Text */}
+            <div className="text-[15px] leading-relaxed break-words">
+              {isDeleted ? (
+                <span className="italic opacity-60 flex items-center gap-1 text-sm">
+                  <FontAwesomeIcon icon={faTrashCan} className="text-[12px]" />
+                  This message was deleted
+                </span>
+              ) : (
+                message.text && <span>{message.text}</span>
+              )}
+            </div>
 
-            {/* Spacer to ensure timestamp doesn't overlap */}
+            {/* 3. Spacer logic */}
             {!message.fileUrl && message.text && message.text.length < 20 && (
-              <div style={{ height: "16px" }} />
+              <div className="h-2" />
             )}
 
-            <MessageTimestamp isOwnMessage={isOwnMessage}>
+            {/* 4. Timestamp & Read Receipts */}
+            <div
+              className={`flex items-center gap-1 mt-1 text-[10px] opacity-70 ${isOwnMessage ? "justify-end" : "justify-start"}`}
+            >
               {message.sent_at}
+
               {isOwnMessage && !isDeleted && (
-                <ReadReceiptIcon
-                  isRead={readReceiptStatus.isRead}
-                  isFullyRead={readReceiptStatus.isFullyRead}
+                <span
                   title={`Read by: ${readReceiptStatus.readByUsers.join(", ")}`}
+                  className="ml-1"
                 >
                   {readReceiptStatus.isFullyRead ? (
-                    <DoneAllIcon />
-                  ) : readReceiptStatus.isRead ? (
-                    <DoneIcon />
+                    <FontAwesomeIcon
+                      icon={faCheckDouble}
+                      className="text-[#667eea]-400"
+                    />
                   ) : (
-                    <DoneIcon style={{ opacity: 0.4 }} />
+                    <FontAwesomeIcon
+                      icon={readReceiptStatus.isRead ? faCheckDouble : faCheck}
+                      className={
+                        readReceiptStatus.isRead
+                          ? "text-gray-300"
+                          : "opacity-40"
+                      }
+                    />
                   )}
-                </ReadReceiptIcon>
+                </span>
               )}
-            </MessageTimestamp>
+            </div>
 
-            {/* Delete button - only show for own messages and non-deleted messages */}
+            {/* 5. Quick Actions (Delete button) - Hiện ra khi hover vào bubble */}
             {isOwnMessage && !isDeleted && (
-              <MessageActions
-                className="message-actions"
-                isOwnMessage={isOwnMessage}
+              <div
+                className={`
+        absolute top-0 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200
+        ${isOwnMessage ? "right-2" : "left-2"}
+      `}
               >
-                <IconButton
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsDeleteDialogOpen(true);
                   }}
-                  size="small"
-                  title="Delete message"
+                  className="bg-[#1e1f22] border border-white/10 p-1.5 rounded-full text-gray-400 hover:text-red-400 hover:shadow-lg transition-all"
                 >
-                  <DeleteIcon />
-                </IconButton>
-              </MessageActions>
+                  <FontAwesomeIcon icon={faTrashCan} className="text-xs" />
+                </button>
+              </div>
             )}
-          </MessageBubble>
-        </MessageContainer>
+          </div>
+        </div>
 
         {/* Delete Confirmation Dialog */}
         <Dialog
@@ -521,7 +294,7 @@ const Message = memo(
         </Dialog>
       </>
     );
-  }
+  },
 );
 
 Message.displayName = "Message";

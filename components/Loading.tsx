@@ -4,33 +4,27 @@ import styled from "styled-components";
 import Image from "next/image";
 import WhatsAppLogo from "../assets/whatsapplogo.png";
 import CircularProgress from "@mui/material/CircularProgress";
-
-const StyledContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-`;
-
-const StyledImageWrapper = styled.div`
-  margin-bottom: 50px;
-`;
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 
 const Loading = () => {
   return (
-    <StyledContainer>
-      <StyledImageWrapper>
-        <Image
-          src={WhatsAppLogo}
-          alt="Whatsapp Logo"
-          height={200}
-          width={200}
-        />
-      </StyledImageWrapper>
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#2a2b30] z-[999]">
+      {/* Logo Wrapper */}
 
-      <CircularProgress />
-    </StyledContainer>
+      {/* Circular Progress Replacement */}
+      <div className="flex flex-col items-center gap-4">
+        <FontAwesomeIcon
+          icon={faCircleNotch}
+          className="text-4xl text-[#667eea]-500 animate-spin"
+        />
+
+        {/* Optional: Thêm dòng chữ nhỏ bên dưới cho chuyên nghiệp */}
+        <p className="text-sm font-medium text-gray-400 tracking-widest uppercase animate-pulse">
+          Đang tải dữ liệu...
+        </p>
+      </div>
+    </div>
   );
 };
 

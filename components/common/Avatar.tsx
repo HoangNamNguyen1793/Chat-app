@@ -10,36 +10,6 @@ interface StyledAvatarProps {
   onClick?: () => void;
 }
 
-const StyledAvatar = styled(Avatar)<StyledAvatarProps>`
-  margin: ${({ margin }) => margin || "5px 15px 5px 5px"};
-  width: ${({ size }) => {
-    switch (size) {
-      case "small":
-        return "32px";
-      case "large":
-        return "64px";
-      default:
-        return "40px";
-    }
-  }};
-  height: ${({ size }) => {
-    switch (size) {
-      case "small":
-        return "32px";
-      case "large":
-        return "64px";
-      default:
-        return "40px";
-    }
-  }};
-  cursor: ${({ onClick }) => (onClick ? "pointer" : "default")};
-  transition: opacity 0.2s ease;
-
-  &:hover {
-    opacity: ${({ onClick }) => (onClick ? "0.8" : "1")};
-  }
-`;
-
 interface AvatarProps {
   src?: string | null;
   name?: string;
@@ -50,7 +20,7 @@ interface AvatarProps {
 }
 
 const UserAvatar = memo(
-  ({ src, name, email, size = "medium", margin, onClick }: AvatarProps) => {
+  ({ src, name, email, size = "small", margin, onClick }: AvatarProps) => {
     const getInitials = () => {
       if (name) {
         return name.charAt(0).toUpperCase();
@@ -62,16 +32,31 @@ const UserAvatar = memo(
     };
 
     return (
-      <StyledAvatar
-        src={src || undefined}
-        size={size}
-        margin={margin}
+      <div
         onClick={onClick}
+        className={`
+    relative flex items-center justify-center rounded-full overflow-hidden shrink-0 cursor-pointer
+    transition-transform duration-200 hover:scale-105 active:scale-95
+    w-10 h-10
+    ${!src ? "bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white font-medium uppercase" : "bg-gray-700"}
+  `}
+        style={{ margin: margin }} // Margin thường là giá trị động nên giữ inline style hoặc dùng class tùy biến
       >
-        {!src && getInitials()}
-      </StyledAvatar>
+        {src ? (
+          <img
+            src={src}
+            alt="User Avatar"
+            className="object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }} // Fallback nếu ảnh lỗi
+          />
+        ) : (
+          <span>{getInitials()}</span>
+        )}
+      </div>
     );
-  }
+  },
 );
 
 UserAvatar.displayName = "UserAvatar";

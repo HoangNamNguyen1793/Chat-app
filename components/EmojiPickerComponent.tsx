@@ -6,45 +6,9 @@ import styled from "styled-components";
 import { FaSmile } from "react-icons/fa";
 import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 
-const PickerWrapper = styled.div`
-  position: relative;
-`;
-
-const EmojiButton = styled.button`
-  padding: 8px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background: transparent;
-  }
-
-  &:focus {
-    outline: none;
-    background: transparent;
-  }
-
-  &:active {
-    background: transparent;
-  }
-`;
-
-const PickerContainer = styled.div`
-  position: absolute;
-  bottom: 50px;
-  left: 0;
-  right: auto;
-  background: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  z-index: 100;
-`;
 import { useEffect, useRef } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFaceSmile } from "@fortawesome/free-solid-svg-icons";
 
 const EmojiPickerComponent = ({
   onSelect,
@@ -74,27 +38,42 @@ const EmojiPickerComponent = ({
   }, [showPicker]);
 
   return (
-    <PickerWrapper>
-      <EmojiButton
+    <div className="relative inline-block">
+      {/* Emoji Button */}
+      <button
+        type="button"
         onClick={(e) => {
           e.preventDefault();
           setShowPicker(!showPicker);
         }}
+        className="p-2 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors active:scale-95 text-gray-400 hover:text-yellow-500"
       >
-        <InsertEmoticonIcon style={{ fontSize: 24, color: "#555" }} />
-      </EmojiButton>
+        <FontAwesomeIcon icon={faFaceSmile} className="text-2xl" />
+      </button>
 
+      {/* Emoji Picker Container */}
       {showPicker && (
-        <PickerContainer>
-          <EmojiPicker
-            onEmojiClick={(emojiData: EmojiClickData) => {
-              onSelect(emojiData.emoji);
-              setShowPicker(false);
-            }}
+        <>
+          {/* Overlay để đóng khi click ra ngoài */}
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setShowPicker(false)}
           />
-        </PickerContainer>
+
+          <div className="absolute bottom-full left-0 mb-2 z-20 shadow-xl border border-gray-200 rounded-lg overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <EmojiPicker
+              onEmojiClick={(emojiData) => {
+                onSelect(emojiData.emoji);
+                setShowPicker(false);
+              }}
+              // Bạn có thể thêm các thuộc tính width/height cho EmojiPicker ở đây
+              lazyLoadEmojis={true}
+              previewConfig={{ showPreview: false }}
+            />
+          </div>
+        </>
       )}
-    </PickerWrapper>
+    </div>
   );
 };
 

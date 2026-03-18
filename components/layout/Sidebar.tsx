@@ -22,243 +22,21 @@ import UserAvatar from "../common/Avatar";
 import { IconButton } from "../common/Button";
 import Button from "../common/Button";
 import ConversationItem from "./ConversationItem";
-import NewConversationDialog from "./NewConversationDialog";
-import NewGroupDialog from "./NewGroupDialog";
+import NewConversationDialog from "../modals/NewConversationDialog";
+import NewGroupDialog from "../modals/NewGroupDialog";
 import UserProfileModal from "../modals/UserProfileModal";
 import ConversationSelect from "../ConversationSelect";
-
-const SidebarContainer = styled.div<{ $isOpen: boolean }>`
-  height: 100vh;
-  min-width: ${(props) => (props.$isOpen ? "300px" : "60px")};
-  max-width: ${(props) => (props.$isOpen ? "400px" : "60px")};
-  width: ${(props) => (props.$isOpen ? "400px" : "60px")};
-  overflow-y: auto;
-  border-right: 1px solid var(--border-color, #e0e0e0);
-  background-color: var(--sidebar-bg, #ffffff);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: all 0.3s ease;
-
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-  }
-
-  @media (max-width: 768px) {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    min-width: 300px;
-    max-width: 300px;
-    width: 300px;
-    transform: translateX(${(props) => (props.$isOpen ? "0" : "-100%")});
-    box-shadow: ${(props) =>
-      props.$isOpen ? "2px 0 10px rgba(0,0,0,0.1)" : "none"};
-  }
-`;
-
-const ToggleButton = styled(IconButton)`
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 1001;
-  background-color: var(--sidebar-bg, #ffffff) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border: 1px solid var(--border-color, #e0e0e0);
-
-  @media (min-width: 769px) {
-    display: none;
-  }
-`;
-
-const Overlay = styled.div<{ $isOpen: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  display: ${(props) => (props.$isOpen ? "block" : "none")};
-
-  @media (min-width: 769px) {
-    display: none;
-  }
-`;
-
-const SidebarHeader = styled.div<{ $isOpen: boolean }>`
-  display: flex;
-  justify-content: ${(props) => (props.$isOpen ? "space-between" : "center")};
-  align-items: center;
-  padding: ${(props) => (props.$isOpen ? "16px" : "12px 8px")};
-  height: 80px;
-  border-bottom: 1px solid var(--border-color, #e0e0e0);
-  background-color: var(--header-bg, #f0f0f0);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  overflow: hidden;
-
-  @media (max-width: 768px) {
-    justify-content: space-between;
-    padding: 16px;
-  }
-`;
-
-const UserInfo = styled.div<{ $isOpen: boolean }>`
-  display: flex;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-  cursor: pointer;
-  border-radius: 8px;
-  padding: 4px;
-  transition: all 0.2s ease;
-  opacity: ${(props) => (props.$isOpen ? 1 : 0)};
-  width: ${(props) => (props.$isOpen ? "auto" : "0")};
-  overflow: hidden;
-  pointer-events: ${(props) => (props.$isOpen ? "auto" : "none")};
-  visibility: ${(props) => (props.$isOpen ? "visible" : "hidden")};
-
-  &:hover {
-    background-color: ${(props) =>
-      props.$isOpen ? "var(--input-bg, #f0f2f5)" : "transparent"};
-  }
-
-  @media (max-width: 768px) {
-    opacity: 1;
-    width: auto;
-    pointer-events: auto;
-    visibility: visible;
-  }
-`;
-
-const UserName = styled.h3<{ $isOpen: boolean }>`
-  margin: 0;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-color, #111b21);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
-  opacity: ${(props) => (props.$isOpen ? 1 : 0)};
-  transition: opacity 0.2s ease;
-
-  @media (max-width: 768px) {
-    opacity: 1;
-  }
-`;
-
-const HeaderActions = styled.div<{ $isOpen: boolean }>`
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  justify-content: ${(props) => (props.$isOpen ? "flex-end" : "center")};
-  flex-shrink: 0;
-
-  @media (max-width: 768px) {
-    justify-content: flex-end;
-  }
-`;
-
-const SearchContainer = styled.div<{ $isOpen: boolean }>`
-  padding: ${(props) => (props.$isOpen ? "12px 16px" : "12px 8px")};
-  border-bottom: 1px solid var(--border-color, #e0e0e0);
-  background-color: var(--sidebar-bg, #ffffff);
-  display: ${(props) => (props.$isOpen ? "block" : "none")};
-
-  @media (max-width: 768px) {
-    display: block;
-    padding: 12px 16px;
-  }
-`;
-
-const SearchInputWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  background-color: var(--input-bg, #f0f2f5);
-  border-radius: 8px;
-  padding: 8px 12px;
-  gap: 8px;
-`;
-
-const SearchInput = styled.input`
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 14px;
-  color: var(--text-color, #111b21);
-
-  &::placeholder {
-    color: var(--text-secondary, #667781);
-  }
-`;
-
-const NewChatButton = styled(Button)<{ $isOpen: boolean }>`
-  width: 100%;
-  border-top: 1px solid var(--border-color, #e0e0e0);
-  border-bottom: 1px solid var(--border-color, #e0e0e0);
-  border-radius: 0;
-  padding: ${(props) => (props.$isOpen ? "16px" : "16px 8px")};
-  justify-content: ${(props) => (props.$isOpen ? "flex-start" : "center")};
-  min-height: 56px;
-
-  span {
-    display: ${(props) => (props.$isOpen ? "inline" : "none")};
-  }
-
-  @media (max-width: 768px) {
-    padding: 16px;
-    justify-content: flex-start;
-
-    span {
-      display: inline;
-    }
-  }
-`;
-
-const ConversationsList = styled.div`
-  flex: 1;
-  overflow-y: auto;
-`;
-
-const EmptyState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  text-align: center;
-  color: var(--text-secondary, #667781);
-
-  h3 {
-    margin: 16px 0 8px;
-    font-size: 18px;
-    color: var(--text-color, #111b21);
-  }
-
-  p {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.4;
-  }
-`;
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faBars,
+  faChevronLeft,
+  faChevronRight,
+  faCommentDots,
+  faRightFromBracket,
+  faSearch,
+  faUsers,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface SidebarProps {
   onConversationSelect?: (conversationId: string) => void;
@@ -294,7 +72,7 @@ const Sidebar = memo(
     const conversationsQuery = loggedInUser
       ? query(
           collection(db, "conversations"),
-          where("users", "array-contains", loggedInUser.email)
+          where("users", "array-contains", loggedInUser.email),
         )
       : null;
 
@@ -342,98 +120,142 @@ const Sidebar = memo(
         const users = conversationData.users || [];
 
         return users.some((user: string) =>
-          user.toLowerCase().includes(searchQuery.toLowerCase())
+          user.toLowerCase().includes(searchQuery.toLowerCase()),
         );
-      }
+      },
     );
 
     return (
       <>
         {hasMounted && isMobile && (
           <>
-            <ToggleButton onClick={handleToggle}>
-              {isOpen ? <CloseIcon /> : <MenuIcon />}
-            </ToggleButton>
-            <Overlay
-              $isOpen={isOpen && isMobile}
+            {/* Mobile Toggle Button */}
+            <button
+              onClick={handleToggle}
+              className="fixed top-4 left-4 z-[60] p-2 bg-[#667eea] text-white rounded-full shadow-lg lg:hidden"
+            >
+              <FontAwesomeIcon icon={isOpen ? faXmark : faBars} />
+            </button>
+
+            {/* Backdrop Overlay */}
+            <div
               onClick={handleOverlayClick}
+              className={`
+        fixed inset-0 bg-[#2a2b30] backdrop-blur-sm z-[55] transition-opacity duration-300
+        ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
+      `}
             />
           </>
         )}
-        <SidebarContainer $isOpen={isOpen}>
-          <SidebarHeader $isOpen={isOpen}>
+        <aside
+          className={`
+  fixed lg:relative flex flex-col h-screen z-[58] bg-[#2b2d31] border-r border-white/5 transition-all duration-300 ease-in-out
+  ${isOpen ? "w-[300px]" : "w-[72px]"}
+`}
+        >
+          {/* Sidebar Header: User Info & Toggle */}
+          <div
+            className={`
+    flex items-center p-4 border-b border-white/5 min-h-[72px]
+    ${isOpen ? "justify-between" : "justify-center"}
+  `}
+          >
             {isOpen && (
-              <UserInfo $isOpen={isOpen} onClick={handleUserInfoClick}>
+              <div
+                onClick={handleUserInfoClick}
+                className="flex items-center gap-3 cursor-pointer group flex-1 min-w-0"
+              >
                 <UserAvatar
                   src={loggedInUser?.photoURL}
                   name={loggedInUser?.displayName || undefined}
                   email={loggedInUser?.email || undefined}
-                  size="medium"
-                  margin={isOpen ? "0 12px 0 0" : "0"}
+                  size="small"
                 />
-                <UserName $isOpen={isOpen}>
+                <span className="text-sm font-bold text-gray-100 truncate group-hover:text-white transition-colors">
                   {loggedInUser?.displayName || loggedInUser?.email || "User"}
-                </UserName>
-                <IconButton
+                </span>
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleLogout();
                   }}
+                  className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
                 >
-                  <LogoutIcon sx={{ fontSize: 20 }} />
-                </IconButton>
-              </UserInfo>
+                  <FontAwesomeIcon
+                    icon={faRightFromBracket}
+                    className="text-sm"
+                  />
+                </button>
+              </div>
             )}
-            <HeaderActions $isOpen={isOpen}>
-              <IconButton onClick={handleToggle}>
-                {isOpen ? (
-                  <KeyboardArrowLeftIcon sx={{ fontSize: 20 }} />
-                ) : (
-                  <KeyboardArrowRightIcon sx={{ fontSize: 20 }} />
-                )}
-              </IconButton>
-            </HeaderActions>
-          </SidebarHeader>
 
+            {/* Toggle Button (Arrow) */}
+            <button
+              onClick={handleToggle}
+              className={`p-2 text-gray-400 hover:text-white transition-all ${!isOpen ? "hover:bg-[#2a2b30]/5 rounded-lg" : ""}`}
+            >
+              <FontAwesomeIcon icon={isOpen ? faChevronLeft : faChevronRight} />
+            </button>
+          </div>
+
+          {/* Search Section */}
           {isOpen && (
-            <SearchContainer $isOpen={isOpen}>
-              <SearchInputWrapper>
-                <SearchIcon
-                  sx={{ fontSize: 18, color: "var(--text-secondary, #667781)" }}
+            <div className="p-4 animate-in fade-in duration-300">
+              <div className="relative group">
+                <FontAwesomeIcon
+                  icon={faSearch}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#667eea] transition-colors"
                 />
-                <SearchInput
+                <input
                   placeholder="Search conversations"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#1e1f22] text-sm text-gray-200 pl-10 pr-4 py-2 rounded-lg outline-none border border-transparent focus:border-[#667eea] transition-all"
                 />
-              </SearchInputWrapper>
-            </SearchContainer>
-          )}
-          {isOpen && (
-            <NewChatButton
-              $isOpen={isOpen}
-              variant="secondary"
-              onClick={handleNewConversation}
-            >
-              <ChatIcon sx={{ marginRight: isOpen ? 1 : 0, fontSize: 18 }} />
-              <span>Start a new conversation</span>
-            </NewChatButton>
-          )}
-          {isOpen && (
-            <NewChatButton
-              $isOpen={isOpen}
-              variant="secondary"
-              onClick={() => setIsNewGroupOpen(true)}
-            >
-              <GroupIcon sx={{ marginRight: isOpen ? 1 : 0, fontSize: 18 }} />
-              <span>Create a new group</span>
-            </NewChatButton>
+              </div>
+            </div>
           )}
 
-          {isOpen && (
-            <ConversationsList>
-              {filteredConversations?.map((conversation) => (
-                <div key={conversation.id}>
+          {/* Action Buttons */}
+          <div className="px-2 space-y-1 mt-2">
+            {[
+              {
+                label: "New Chat",
+                icon: faCommentDots,
+                onClick: handleNewConversation,
+              },
+              {
+                label: "New Group",
+                icon: faUsers,
+                onClick: () => setIsNewGroupOpen(true),
+              },
+            ].map((action, idx) => (
+              <button
+                key={idx}
+                onClick={action.onClick}
+                className={`
+          flex items-center gap-3 w-full p-3 rounded-lg text-gray-400 hover:bg-[#2a2b30]/5 hover:text-white transition-all
+          ${!isOpen ? "justify-center" : ""}
+        `}
+              >
+                <FontAwesomeIcon icon={action.icon} className="text-lg" />
+                {isOpen && (
+                  <span className="text-sm font-medium animate-in slide-in-from-left-2">
+                    {action.label}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Conversations List */}
+          <div className="flex-1 overflow-y-auto mt-4 scrollbar-thin scrollbar-thumb-white/5">
+            {isOpen &&
+              filteredConversations?.map((conversation) => (
+                <div
+                  key={conversation.id}
+                  className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                >
                   <ConversationSelect
                     id={conversation.id}
                     conversationUsers={
@@ -442,14 +264,13 @@ const Sidebar = memo(
                   />
                 </div>
               ))}
-            </ConversationsList>
-          )}
+          </div>
 
+          {/* Modals & Dialogs */}
           <NewConversationDialog
             open={isNewConversationOpen}
             onClose={() => setIsNewConversationOpen(false)}
           />
-
           <NewGroupDialog
             open={isNewGroupOpen}
             onClose={() => setIsNewGroupOpen(false)}
@@ -460,10 +281,10 @@ const Sidebar = memo(
             user={loggedInUser}
             showSnackbar={showSnackbar}
           />
-        </SidebarContainer>
+        </aside>
       </>
     );
-  }
+  },
 );
 
 Sidebar.displayName = "Sidebar";

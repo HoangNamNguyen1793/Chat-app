@@ -20,51 +20,6 @@ const getAvatarSize = (size: string) => {
   }
 };
 
-const AvatarContainer = styled.div<{ size: string }>`
-  position: relative;
-  margin: 5px 15px 5px 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const StyledAvatar = styled(Avatar)<{ avatarSize: string }>`
-  width: ${(props) => props.avatarSize};
-  height: ${(props) => props.avatarSize};
-  font-size: ${(props) => {
-    const size = parseInt(props.avatarSize);
-    return `${size * 0.4}px`;
-  }};
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  ${(props) =>
-    !props.src &&
-    `
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-  `}
-`;
-
-const OnlineIndicator = styled.div`
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 12px;
-  height: 12px;
-  background-color: #4caf50;
-  border: 2px solid white;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-`;
-
 const getInitials = (name: string, email: string) => {
   if (name && name.trim()) {
     const nameParts = name.trim().split(" ");
@@ -92,16 +47,37 @@ const RecipientAvatar = ({
       5 * 60 * 1000;
 
   return (
-    <AvatarContainer size={size}>
-      <StyledAvatar
-        src={recipient?.photoURL}
-        avatarSize={avatarSize}
-        alt={recipientName || recipientEmail}
+    <div className="relative inline-block flex-shrink-0">
+      {/* Avatar Wrapper */}
+      <div
+        className={`
+      flex items-center justify-center rounded-full overflow-hidden border border-gray-100 bg-[#667eea]-100 text-[#667eea]-600 font-semibold uppercase
+      ${size === "large" ? "w-16 h-16 text-xl" : size === "small" ? "w-8 h-8 text-xs" : "w-10 h-10 text-sm"}
+    `}
       >
-        {!recipient?.photoURL && initials}
-      </StyledAvatar>
-      {showOnlineStatus && isOnline && <OnlineIndicator />}
-    </AvatarContainer>
+        {recipient?.photoURL ? (
+          <img
+            src={recipient.photoURL}
+            alt={recipientName || recipientEmail}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          /* Hiển thị Initials nếu không có ảnh */
+          <span>{initials}</span>
+        )}
+      </div>
+
+      {/* Online Indicator */}
+      {showOnlineStatus && isOnline && (
+        <span
+          className={`
+        absolute bottom-0 right-0 block rounded-full bg-[#667eea]-500 border-2 border-white
+        ${size === "large" ? "w-4 h-4" : "w-3 h-3"}
+      `}
+          title="Online"
+        />
+      )}
+    </div>
   );
 };
 
