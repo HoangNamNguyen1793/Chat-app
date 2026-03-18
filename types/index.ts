@@ -3,14 +3,14 @@ import { Timestamp } from "firebase/firestore";
 
 export interface Conversation {
   users: string[];
-  isGroup?: boolean;
-  groupName?: string;
-  groupDescription?: string;
-  groupImage?: string;
-  adminUsers?: string[];
-  createdAt?: string;
-  createdBy?: string;
-  lastActivity?: string;
+  isGroup?: boolean | null;
+  groupName?: string | null;
+  groupDescription?: string | null;
+  groupImage?: string | null;
+  adminUsers?: string[] | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+  lastActivity?: string | null;
 }
 
 export interface GroupMember {
@@ -19,7 +19,7 @@ export interface GroupMember {
   photoURL?: string;
   isAdmin: boolean;
   joinedAt: Timestamp;
-  addedBy?: string;
+  addedBy?: string | null;
 }
 
 export interface AppUser {

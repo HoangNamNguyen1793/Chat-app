@@ -78,24 +78,24 @@ export const getServerSideProps: GetServerSideProps<
   const messagesSnapshot = await getDocs(queryMessages);
 
   const messages = messagesSnapshot.docs.map((messageDoc) =>
-    transformMessage(messageDoc)
+    transformMessage(messageDoc),
   );
 
   const conversationData = conversationSnapshot.data();
   const transformedConversation: Conversation = {
     users: conversationData?.users ?? [],
-    isGroup: conversationData?.isGroup,
-    groupName: conversationData?.groupName,
-    groupDescription: conversationData?.groupDescription,
+    isGroup: conversationData?.isGroup ?? null,
+    groupName: conversationData?.groupName ?? null,
+    groupDescription: conversationData?.groupDescription ?? null,
     groupImage: conversationData?.groupImage ?? null,
-    adminUsers: conversationData?.adminUsers,
+    adminUsers: conversationData?.adminUsers ?? null,
     createdAt: conversationData?.createdAt
       ? convertFirestoreTimestampToString(conversationData.createdAt)
-      : undefined,
-    createdBy: conversationData?.createdBy,
+      : null,
+    createdBy: conversationData?.createdBy ?? null,
     lastActivity: conversationData?.lastActivity
       ? convertFirestoreTimestampToString(conversationData.lastActivity)
-      : undefined,
+      : null,
   };
 
   return {
