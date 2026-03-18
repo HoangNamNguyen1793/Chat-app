@@ -149,72 +149,11 @@ const Sidebar = memo(
         )}
         <aside
           className={`
-  fixed lg:relative flex flex-col h-screen z-[58] bg-[#2b2d31] border-r border-white/5 transition-all duration-300 ease-in-out
+  fixed lg:relative flex flex-col h-screen z-[58] bg-[#2b2d31] shadow-2xl   transition-all duration-300 ease-in-out
   ${isOpen ? "w-[300px]" : "w-[72px]"}
 `}
         >
           {/* Sidebar Header: User Info & Toggle */}
-          <div
-            className={`
-    flex items-center p-4 border-b border-white/5 min-h-[72px]
-    ${isOpen ? "justify-between" : "justify-center"}
-  `}
-          >
-            {isOpen && (
-              <div
-                onClick={handleUserInfoClick}
-                className="flex items-center gap-3 cursor-pointer group flex-1 min-w-0"
-              >
-                <UserAvatar
-                  src={loggedInUser?.photoURL}
-                  name={loggedInUser?.displayName || undefined}
-                  email={loggedInUser?.email || undefined}
-                  size="small"
-                />
-                <span className="text-sm font-bold text-gray-100 truncate group-hover:text-white transition-colors">
-                  {loggedInUser?.displayName || loggedInUser?.email || "User"}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLogout();
-                  }}
-                  className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
-                >
-                  <FontAwesomeIcon
-                    icon={faRightFromBracket}
-                    className="text-sm"
-                  />
-                </button>
-              </div>
-            )}
-
-            {/* Toggle Button (Arrow) */}
-            <button
-              onClick={handleToggle}
-              className={`p-2 text-gray-400 hover:text-white transition-all ${!isOpen ? "hover:bg-[#2a2b30]/5 rounded-lg" : ""}`}
-            >
-              <FontAwesomeIcon icon={isOpen ? faChevronLeft : faChevronRight} />
-            </button>
-          </div>
-
-          {/* Search Section */}
-          {isOpen && (
-            <div className="p-4 animate-in fade-in duration-300">
-              <div className="relative group">
-                <FontAwesomeIcon
-                  icon={faSearch}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#667eea] transition-colors"
-                />
-                <input
-                  placeholder="Search conversations"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#1e1f22] text-sm text-gray-200 pl-10 pr-4 py-2 rounded-lg outline-none border border-transparent focus:border-[#667eea] transition-all"
-                />
-              </div>
-            </div>
-          )}
 
           {/* Action Buttons */}
           <div className="px-2 space-y-1 mt-2">
@@ -248,8 +187,26 @@ const Sidebar = memo(
             ))}
           </div>
 
+          {/* Search Section */}
+          {isOpen && (
+            <div className="p-4 animate-in fade-in duration-300 border-t border-white/5">
+              <div className="relative group">
+                <FontAwesomeIcon
+                  icon={faSearch}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#667eea] transition-colors"
+                />
+                <input
+                  placeholder="Search conversations"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#1e1f22] text-sm text-gray-200 pl-10 pr-4 py-2 rounded-lg outline-none border border-transparent focus:border-[#667eea] transition-all"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Conversations List */}
-          <div className="flex-1 overflow-y-auto mt-4 scrollbar-thin scrollbar-thumb-white/5">
+          <div className="flex-1 overflow-y-auto  scrollbar-thin scrollbar-thumb-white/5">
             {isOpen &&
               filteredConversations?.map((conversation) => (
                 <div
@@ -264,6 +221,50 @@ const Sidebar = memo(
                   />
                 </div>
               ))}
+          </div>
+
+          <div
+            className={`
+    flex items-center p-4 border-t border-white/5 min-h-[72px] 
+    ${isOpen ? "justify-between" : "justify-center "}
+  `}
+          >
+            {isOpen && (
+              <div
+                onClick={handleUserInfoClick}
+                className="flex items-center gap-3 cursor-pointer group flex-1 min-w-0 "
+              >
+                <UserAvatar
+                  src={loggedInUser?.photoURL}
+                  name={loggedInUser?.displayName || undefined}
+                  email={loggedInUser?.email || undefined}
+                  size="small"
+                />
+                <span className="text-sm font-bold text-gray-100 truncate group-hover:text-white transition-colors">
+                  {loggedInUser?.displayName || loggedInUser?.email || "User"}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLogout();
+                  }}
+                  className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
+                >
+                  <FontAwesomeIcon
+                    icon={faRightFromBracket}
+                    className="text-sm"
+                  />
+                </button>
+              </div>
+            )}
+
+            {/* Toggle Button (Arrow) */}
+            {/* <button
+              onClick={handleToggle}
+              className={`p-2 text-gray-400 hover:text-white transition-all ${!isOpen ? "hover:bg-[#2a2b30]/5 rounded-lg" : ""}`}
+            >
+              <FontAwesomeIcon icon={isOpen ? faChevronLeft : faChevronRight} />
+            </button> */}
           </div>
 
           {/* Modals & Dialogs */}

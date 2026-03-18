@@ -74,7 +74,8 @@ const ChatInput = memo(
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          className="flex-1 bg-[#2a2b30] border-none outline-none px-3 py-2 text-white placeholder-gray-400 disabled:cursor-not-allowed"
+          /* Thay px-3 bằng pl-6 (hoặc giá trị bạn muốn) và pr-3 */
+          className="flex-1 bg-[#2a2b30] border-none outline-none pl-6 pr-3 py-2 text-white placeholder-gray-400 disabled:cursor-not-allowed rounded-md"
         />
 
         <div className="flex items-center gap-2">

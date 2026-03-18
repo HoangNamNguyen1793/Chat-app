@@ -422,168 +422,173 @@ const ConversationScreen = ({
 
   return (
     <>
-      <header className="flex items-center p-4 bg-[#1e1f22] backdrop-blur-lg border-b border-white/10 sticky top-0 z-10">
-        {isGroup ? (
-          /* Avatar cho Group */
-          <div className="flex items-center justify-center w-[50px] h-[50px] rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] mr-3 shadow-md transition-all duration-300 hover:scale-105">
-            <FontAwesomeIcon icon={faUsers} className="text-white text-xl" />
-          </div>
-        ) : (
-          /* Avatar cho Cá nhân - Giữ component RecipientAvatar nhưng có thể bọc ngoài nếu cần */
-          <div className="mr-3">
-            <RecipientAvatar
-              recipient={recipient}
-              recipientEmail={recipientEmail}
-              recipientName={recipientName}
-              size="large"
-              showOnlineStatus={true}
-            />
-          </div>
-        )}
-
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-300 truncate m-0">
-            {displayName}
-          </h3>
-
-          <div className="text-xs text-gray-400 flex items-center gap-1 truncate">
+      <div className="flex flex-row">
+        <div className="flex flex-col w-full">
+          <header className="flex items-center p-3 bg-[#1e1f22] backdrop-blur-lg shadow-2xl border-white/10 sticky top-0 z-10">
             {isGroup ? (
-              <>
-                <span>{conversation.users?.length || 0} members</span>
-                {conversation.groupDescription && (
-                  <span className="flex items-center">
-                    <span className="mx-1">•</span>
-                    <span className="truncate">
-                      {conversation.groupDescription}
-                    </span>
-                  </span>
-                )}
-              </>
+              /* Avatar cho Group */
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] mr-3 shadow-md transition-all duration-300 hover:scale-105">
+                <FontAwesomeIcon
+                  icon={faUsers}
+                  className="text-white text-xl"
+                />
+              </div>
             ) : (
-              recipient && (
-                <span>
-                  Last active:{" "}
-                  {convertFirestoreTimestampToString(recipient.lastSeen)}
-                </span>
-              )
+              /* Avatar cho Cá nhân - Giữ component RecipientAvatar nhưng có thể bọc ngoài nếu cần */
+              <div className="mr-3">
+                <RecipientAvatar
+                  recipient={recipient}
+                  recipientEmail={recipientEmail}
+                  recipientName={recipientName}
+                  size="medium"
+                  showOnlineStatus={true}
+                />
+              </div>
             )}
-          </div>
-        </div>
 
-        <div className="flex items-center gap-1 ml-4">
-          {/* Nút Search */}
-          <button
-            onClick={() => setIsSearchOpen(!isSearchOpen)}
-            className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-full transition-colors"
-          >
-            <FontAwesomeIcon icon={faMagnifyingGlass} className="text-lg" />
-          </button>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold text-gray-300 truncate m-0">
+                {displayName}
+              </h3>
 
-          {/* Nút Xem thành viên nhóm */}
-          {isGroup && (
-            <button
-              onClick={() => setIsGroupMembersOpen(true)}
-              className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-full transition-colors"
-            >
-              <FontAwesomeIcon icon={faUserGroup} className="text-lg" />
-            </button>
-          )}
+              <div className="text-xs text-gray-400 flex items-center gap-1 truncate">
+                {isGroup ? (
+                  <>
+                    <span>{conversation.users?.length || 0} members</span>
+                    {conversation.groupDescription && (
+                      <span className="flex items-center">
+                        <span className="mx-1">•</span>
+                        <span className="truncate">
+                          {conversation.groupDescription}
+                        </span>
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  recipient && (
+                    <span>
+                      Last active:{" "}
+                      {convertFirestoreTimestampToString(recipient.lastSeen)}
+                    </span>
+                  )
+                )}
+              </div>
+            </div>
 
-          {/* Nút Ảnh/Media */}
-          <button
-            onClick={toggleImageSidebar}
-            className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-full transition-colors"
-          >
-            <FontAwesomeIcon icon={faImage} className="text-lg" />
-          </button>
-        </div>
-      </header>
+            <div className="flex items-center gap-1 ml-4">
+              {/* Nút Search */}
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-full transition-colors"
+              >
+                <FontAwesomeIcon icon={faMagnifyingGlass} className="text-lg" />
+              </button>
 
-      {isSearchOpen && (
-        <div className="absolute top-0 left-0 w-full z-20 bg-[#1e1f22]/95 backdrop-blur-md border-b border-white/10 shadow-lg transition-all animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Search Input Area */}
-          <div className="flex items-center w-full px-4 py-3 gap-3">
-            <FontAwesomeIcon
-              icon={faMagnifyingGlass}
-              className="text-gray-400 text-sm"
-            />
-
-            <input
-              type="text"
-              placeholder="Nhập từ khóa tìm kiếm..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              autoFocus
-              className="flex-1 bg-[#2a2b30] border-none outline-none text-white text-sm placeholder-gray-500"
-            />
-
-            <button
-              onClick={() => setIsSearchOpen(false)}
-              className="p-1.5 hover:bg-[#2a2b30]/10 rounded-md text-gray-400 hover:text-white transition-colors"
-            >
-              <FontAwesomeIcon icon={faXmark} className="text-lg" />
-            </button>
-          </div>
-
-          {/* Search Results Dropdown */}
-          {searchResults.length > 0 && (
-            <div className="max-h-[300px] overflow-y-auto border-t border-white/5 bg-[#1e1f22]">
-              {searchResults.map((result) => (
-                <div
-                  key={result.id}
-                  onClick={() => scrollToMessage(result.id)}
-                  className="px-4 py-3 border-b border-white/5 cursor-pointer hover:bg-[#2a2b30]/5 transition-colors group"
+              {/* Nút Xem thành viên nhóm */}
+              {isGroup && (
+                <button
+                  onClick={() => setIsGroupMembersOpen(true)}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-full transition-colors"
                 >
-                  <p className="text-sm text-gray-300 group-hover:text-white truncate">
-                    {result.text.length > 50
-                      ? result.text.substring(0, 50) + "..."
-                      : result.text}
-                  </p>
-                  <span className="text-[10px] text-gray-500 mt-1 block uppercase tracking-wider">
-                    {result.sent_at}
-                  </span>
+                  <FontAwesomeIcon icon={faUserGroup} className="text-lg" />
+                </button>
+              )}
+
+              {/* Nút Ảnh/Media */}
+              {/* <button
+                onClick={toggleImageSidebar}
+                className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-full transition-colors"
+              >
+                <FontAwesomeIcon icon={faImage} className="text-lg" />
+              </button> */}
+            </div>
+          </header>
+
+          {isSearchOpen && (
+            <div className="absolute top-0 left-0 w-full z-20 bg-[#1e1f22]/95 backdrop-blur-md border-b border-white/10 shadow-lg transition-all animate-in fade-in slide-in-from-top-2 duration-200">
+              {/* Search Input Area */}
+              <div className="flex items-center w-full px-4 py-3 gap-3">
+                <FontAwesomeIcon
+                  icon={faMagnifyingGlass}
+                  className="text-gray-400 text-sm"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Nhập từ khóa tìm kiếm..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                  className="flex-1 bg-[#2a2b30] border-none outline-none text-white text-sm placeholder-gray-500"
+                />
+
+                <button
+                  onClick={() => setIsSearchOpen(false)}
+                  className="p-1.5 hover:bg-[#2a2b30]/10 rounded-md text-gray-400 hover:text-white transition-colors"
+                >
+                  <FontAwesomeIcon icon={faXmark} className="text-lg" />
+                </button>
+              </div>
+
+              {/* Search Results Dropdown */}
+              {searchResults.length > 0 && (
+                <div className="max-h-[300px] overflow-y-auto border-t border-white/5 bg-[#1e1f22]">
+                  {searchResults.map((result) => (
+                    <div
+                      key={result.id}
+                      onClick={() => scrollToMessage(result.id)}
+                      className="px-4 py-3 border-b border-white/5 cursor-pointer hover:bg-[#2a2b30]/5 transition-colors group"
+                    >
+                      <p className="text-sm text-gray-300 group-hover:text-white truncate">
+                        {result.text.length > 50
+                          ? result.text.substring(0, 50) + "..."
+                          : result.text}
+                      </p>
+                      <span className="text-[10px] text-gray-500 mt-1 block uppercase tracking-wider">
+                        {result.sent_at}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
-        </div>
-      )}
-      <div className="bg-[#1e1f22] flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-        {showMessages()}
+          <div className="bg-[#1e1f22] flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+            {showMessages()}
 
-        {/* Phần tử dùng để auto-scroll */}
-        <div ref={endOfMessagesRef} className="h-1 w-full" />
-      </div>
-      <FileReviewComponent
-        selectedFiles={selectedFiles}
-        filePreviews={filePreviews}
-        uploadProgress={uploadProgress}
-        isUploading={isUploading}
-        clearSelectedFiles={clearSelectedFiles}
-        removeFile={removeFile}
-      />
+            {/* Phần tử dùng để auto-scroll */}
+            <div ref={endOfMessagesRef} className="h-1 w-full" />
+          </div>
+          <FileReviewComponent
+            selectedFiles={selectedFiles}
+            filePreviews={filePreviews}
+            uploadProgress={uploadProgress}
+            isUploading={isUploading}
+            clearSelectedFiles={clearSelectedFiles}
+            removeFile={removeFile}
+          />
 
-      <div className="flex items-center gap-2 p-3 bg-[#2b2d31] border border-white/5 shadow-inner">
-        {/* Emoji Picker */}
-        <EmojiPickerComponent onSelect={handleEmojiSelect} />
+          <div className="flex items-center gap-2 p-3 bg-[#2b2d31]  shadow-2xl">
+            {/* Emoji Picker */}
+            <EmojiPickerComponent onSelect={handleEmojiSelect} />
 
-        {/* Input chính */}
-        <input
-          value={newMessage}
-          onChange={(event) => setNewMessage(event.target.value)}
-          onKeyDown={sendMessageOnEnter}
-          placeholder="Nhập tin nhắn..."
-          className="flex-1 bg-[#1e1f22] border-none outline-none rounded-xl text-gray-200 placeholder-gray-500 text-sm py-1.5 "
-        />
+            {/* Input chính */}
+            <input
+              value={newMessage}
+              onChange={(event) => setNewMessage(event.target.value)}
+              onKeyDown={sendMessageOnEnter}
+              placeholder="Nhập tin nhắn..."
+              className="flex-1 bg-[#1e1f22] border-none outline-none rounded-xl text-gray-200 placeholder-gray-500 text-sm p-3  "
+            />
 
-        <div className="flex items-center gap-1">
-          {/* Nút Gửi */}
-          <button
-            onClick={sendMessageOnClick}
-            disabled={
-              (!newMessage && selectedFiles.length === 0) || isUploading
-            }
-            className={`
+            <div className="flex items-center gap-1">
+              {/* Nút Gửi */}
+              <button
+                onClick={sendMessageOnClick}
+                disabled={
+                  (!newMessage && selectedFiles.length === 0) || isUploading
+                }
+                className={`
         p-2 rounded-lg transition-all duration-200
         ${
           (!newMessage && selectedFiles.length === 0) || isUploading
@@ -591,29 +596,37 @@ const ConversationScreen = ({
             : "text-[#667eea] hover:bg-[#667eea]/10 hover:scale-110 active:scale-95"
         }
       `}
-          >
-            <FontAwesomeIcon icon={faPaperPlane} className="text-lg" />
-          </button>
+              >
+                <FontAwesomeIcon icon={faPaperPlane} className="text-lg" />
+              </button>
 
-          {/* Nút Đính kèm */}
-          <button
-            onClick={() => {
-              const fileInput = document.getElementById("fileInput");
-              fileInput?.click();
-            }}
-            disabled={isUploading}
-            className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <FontAwesomeIcon icon={faPaperclip} className="text-lg" />
-          </button>
+              {/* Nút Đính kèm */}
+              <button
+                onClick={() => {
+                  const fileInput = document.getElementById("fileInput");
+                  fileInput?.click();
+                }}
+                disabled={isUploading}
+                className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2b30]/10 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <FontAwesomeIcon icon={faPaperclip} className="text-lg" />
+              </button>
+            </div>
+
+            {/* Input file ẩn */}
+            <input
+              type="file"
+              id="fileInput"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
         </div>
 
-        {/* Input file ẩn */}
-        <input
-          type="file"
-          id="fileInput"
-          className="hidden"
-          onChange={handleFileChange}
+        <ImageSidebar
+          conversationId={conversationId as string}
+          isOpen={isImageSidebarOpen}
+          toggleSidebar={toggleImageSidebar}
         />
       </div>
 
@@ -622,14 +635,6 @@ const ConversationScreen = ({
         isOpen={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
       />
-
-      {conversationId && (
-        <ImageSidebar
-          conversationId={conversationId as string}
-          isOpen={isImageSidebarOpen}
-          toggleSidebar={toggleImageSidebar}
-        />
-      )}
 
       {/* Group Members Dialog */}
       {isGroup && (

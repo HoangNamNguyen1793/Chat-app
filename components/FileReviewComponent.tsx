@@ -42,11 +42,11 @@ const FileReviewComponent: React.FC<FileReviewProps> = ({
   if (selectedFiles.length === 0) return null;
 
   return (
-    <div className="w-full p-4 bg-gray-50 border-t border-gray-200">
+    <div className="w-full p-4 bg-[#2b2d31] border-b border-white/10">
       {/* Header: Số lượng tệp & Xóa tất cả */}
       <div className="flex justify-between items-center mb-3">
-        <span className="text-sm font-medium text-gray-600">
-          {selectedFiles.length} tệp đã chọn
+        <span className="text-sm font-medium text-gray-400">
+          {selectedFiles.length} Choosen Files
         </span>
         {selectedFiles.length > 1 && (
           <button
@@ -69,7 +69,7 @@ const FileReviewComponent: React.FC<FileReviewProps> = ({
           return (
             <div
               key={index}
-              className="relative flex items-center gap-3 p-2 bg-[#2a2b30] border border-gray-200 rounded-lg min-w-[200px] max-w-[250px] shadow-sm group"
+              className="relative flex items-center gap-3 p-2 bg-[#2a2b30] border border-white/10 rounded-lg min-w-[200px] max-w-[250px] shadow-sm group"
             >
               {/* Ảnh preview hoặc Icon file */}
               <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-50 rounded overflow-hidden">
@@ -90,12 +90,12 @@ const FileReviewComponent: React.FC<FileReviewProps> = ({
               {/* Thông tin file */}
               <div className="flex-1 min-w-0 pr-6">
                 <p
-                  className="text-sm font-medium text-gray-800 truncate"
+                  className="text-sm font-medium text-gray-300 truncate"
                   title={item.file.name}
                 >
                   {item.file.name}
                 </p>
-                <span className="text-[11px] text-gray-500 italic">
+                <span className="text-[11px] text-gray-400 italic">
                   {(item.file.size / 1024).toFixed(1)} KB
                 </span>
 

@@ -134,7 +134,7 @@ const ImageSidebar = ({
       {isMobile && (
         <div
           onClick={toggleSidebar}
-          className={`fixed inset-0 z-[69] bg-[#2a2b30] transition-opacity duration-300 ${
+          className={`fixed inset-0 z-[69] bg-[#2b2d31]transition-opacity duration-300 ${
             isOpen
               ? "opacity-100 pointer-events-auto"
               : "opacity-0 pointer-events-none"
@@ -142,12 +142,9 @@ const ImageSidebar = ({
         />
       )}
 
-      <aside
-        className={`fixed top-0 right-0 z-[70] flex h-screen w-full max-w-[360px] flex-col border-l border-white/10 bg-[#1e1f22] shadow-2xl transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
+      <div className="flex h-screen w-full max-w-[360px] flex-col border-l border-white/10 bg-[#2b2d31] shadow-2xl">
+        {/* Header: Đã bỏ nút toggle và chỉnh lại padding/layout */}
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
           <div>
             <h2 className="text-sm font-semibold text-white">Media & Files</h2>
             <p className="mt-1 text-xs text-gray-400">
@@ -155,16 +152,9 @@ const ImageSidebar = ({
               {mediaMessages.length === 1 ? "" : "s"}
             </p>
           </div>
-
-          <button
-            onClick={toggleSidebar}
-            className="rounded-full p-2 text-gray-400 transition-colors hover:bg-[#2a2b30]/10 hover:text-white"
-            aria-label="Close media sidebar"
-          >
-            <CloseIcon fontSize="small" />
-          </button>
         </div>
 
+        {/* Body: Giữ nguyên logic hiển thị nội dung */}
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {loading && (
             <div className="rounded-xl border border-white/10 bg-[#2a2b30]/[0.03] px-4 py-6 text-center text-sm text-gray-400">
@@ -186,6 +176,7 @@ const ImageSidebar = ({
 
           {!loading && !error && mediaMessages.length > 0 && (
             <div className="space-y-6">
+              {/* Section Images */}
               <section>
                 <div className="mb-3 flex items-center gap-2 text-sm font-medium text-white">
                   <ImageIcon fontSize="small" />
@@ -228,6 +219,7 @@ const ImageSidebar = ({
                 )}
               </section>
 
+              {/* Section Files */}
               <section>
                 <div className="mb-3 flex items-center gap-2 text-sm font-medium text-white">
                   <InsertDriveFileIcon fontSize="small" />
@@ -254,7 +246,6 @@ const ImageSidebar = ({
                         <div className="rounded-lg bg-[#2a2b30]/10 p-2 text-gray-300">
                           <InsertDriveFileIcon fontSize="small" />
                         </div>
-
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium text-gray-200">
                             {getFileName(file.fileUrl)}
@@ -275,8 +266,7 @@ const ImageSidebar = ({
             </div>
           )}
         </div>
-      </aside>
-
+      </div>
       <ImageModal
         imageUrl={selectedImage}
         isOpen={isImageModalOpen}

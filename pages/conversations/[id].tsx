@@ -39,15 +39,13 @@ const Conversation = ({ conversation, messages }: Props) => {
       {/* Sử dụng z-index cao và transition để Sidebar trượt ra trên Mobile. 
       Trên Desktop (md trở lên), nó sẽ chiếm một phần cố định của màn hình.
   */}
-      <aside
+      {/* <aside
         className={`
       fixed inset-y-0 left-0 z-40 w-80   transition-transform duration-300 ease-in-out transform
       md:relative md:translate-x-0 
       ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
     `}
-      >
-        <Sidebar isOpen={isSidebarOpen} onToggle={handleSidebarToggle} />
-      </aside>
+      ></aside> */}
 
       {/* Overlay cho Mobile khi Sidebar đang mở */}
       {isSidebarOpen && (
@@ -58,12 +56,18 @@ const Conversation = ({ conversation, messages }: Props) => {
       )}
 
       {/* Main Conversation Content */}
-      <main className="flex-1 flex flex-col min-w-0 h-full relative">
-        <ConversationScreen
-          conversation={conversation}
-          messages={messages}
-          // Bạn có thể truyền thêm hàm toggle Sidebar vào đây để hiện nút Menu trên Mobile
-        />
+      <main
+        className={`flex flex-row min-w-0 h-full relative transition-all duration-300 ease-in-out w-full`}
+      >
+        <Sidebar isOpen={isSidebarOpen} onToggle={handleSidebarToggle} />
+        <div className="flex flex-col w-full">
+          <ConversationScreen
+            conversation={conversation}
+            messages={messages}
+
+            // Bạn có thể truyền thêm hàm toggle Sidebar vào đây để hiện nút Menu trên Mobile
+          />
+        </div>
       </main>
     </div>
   );
